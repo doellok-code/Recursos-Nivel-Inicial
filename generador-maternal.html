@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generador de propuestas · Sala Maternal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#7a1152;
+    --paper:#fff1f6;
+    --card:#ffffff;
+    --coral:#ff6fa5;
+    --teal:#c2185b;
+    --yellow:#ffb3d1;
+    --grape:#e0308a;
+    --magenta:#d6006d;
+    --line:#7a1152;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+
+  /* ---------- fondo abstracto ---------- */
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  .bg-shape svg{display:block;}
+
+  /* ---------- header ---------- */
+  header{
+    position:relative;
+    z-index:2;
+    padding:56px 24px 40px;
+    max-width:920px;
+    margin:0 auto;
+    text-align:left;
+  }
+  .eyebrow{
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(34px,6vw,58px);
+    line-height:1.02;
+    margin:22px 0 14px;
+    letter-spacing:-0.01em;
+  }
+  h1 span{
+    font-style:italic;
+    color:var(--grape);
+  }
+  .lede{
+    font-size:18px;
+    line-height:1.55;
+    max-width:52ch;
+    color:#5c1f42;
+  }
+  .author-line{
+    font-size:16px;
+    color:var(--grape);
+    margin:14px 0 0;
+    font-weight:600;
+  }
+  .author-line .signature{font-size:19px;}
+
+  /* ---------- panel de control ---------- */
+  .panel{
+    position:relative;
+    z-index:2;
+    max-width:920px;
+    margin:0 auto 36px;
+    padding:0 24px;
+  }
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:32px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:26px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:10px;}
+  .chip{
+    font-family:'Manrope',sans-serif;
+    font-weight:700;
+    font-size:14.5px;
+    padding:10px 18px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    cursor:pointer;
+    transition:transform .12s ease, background .15s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{
+    background:var(--ink);
+    color:var(--paper);
+  }
+  .chip[data-area="motriz-gruesa"].active{background:var(--coral);}
+  .chip[data-area="motriz-fina"].active{background:var(--yellow);color:var(--ink);}
+  .chip[data-area="sensorial"].active{background:var(--grape);color:var(--paper);}
+  .chip[data-area="vinculo"].active{background:var(--magenta);}
+  .chip[data-area="autonomia"].active{background:var(--teal);}
+
+  .generate-wrap{
+    display:flex;
+    justify-content:center;
+    margin:38px 0 6px;
+  }
+  .generate-btn{
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:17px;
+    letter-spacing:.02em;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:20px 40px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+    position:relative;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  /* ---------- resultado ---------- */
+  .result-wrap{
+    position:relative;
+    z-index:2;
+    max-width:920px;
+    margin:0 auto;
+    padding:0 24px;
+    min-height:40px;
+  }
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:36px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+    overflow:hidden;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-accent{
+    position:absolute;
+    top:-40px;right:-40px;
+    width:160px;height:160px;
+    z-index:0;
+    opacity:.9;
+  }
+  .card-top{
+    position:relative;z-index:1;
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:18px;
+  }
+  .badge{
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+  }
+  .card h2{
+    position:relative;z-index:1;
+    font-family:'Playfair Display',serif;
+    font-size:clamp(24px,4vw,32px);
+    font-weight:800;
+    margin:0 0 18px;
+    max-width:80%;
+  }
+  .card-section{position:relative;z-index:1;margin-bottom:20px;}
+  .card-section:last-child{margin-bottom:0;}
+  .card-section h3{
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    margin:0 0 8px;
+    color:var(--grape);
+  }
+  .card-section p, .card-section li{
+    font-size:16px;
+    line-height:1.6;
+    margin:0;
+    color:#4a1730;
+  }
+  .card-section ul{margin:0;padding-left:20px;}
+  .card-section ul li{margin-bottom:4px;}
+  .meta-row{
+    position:relative;z-index:1;
+    display:flex;
+    gap:22px;
+    flex-wrap:wrap;
+    margin-top:24px;
+    padding-top:20px;
+    border-top:2px dashed var(--ink);
+    font-size:14px;
+    font-weight:700;
+  }
+  .meta-row span{opacity:.85;}
+  .watermark{
+    position:relative;z-index:1;
+    font-family:'Manrope',sans-serif;
+    font-size:11px;
+    font-weight:700;
+    letter-spacing:.05em;
+    color:#c98ab0;
+    margin-top:14px;
+    text-align:right;
+  }
+  .signature{
+    font-family:'Dancing Script',cursive;
+    font-weight:700;
+    text-transform:none;
+  }
+  .watermark .signature{font-size:15px;}
+  .eyebrow .signature{font-size:16px;}
+  footer .signature{font-size:15px;}
+
+  .again-wrap{
+    display:flex;
+    justify-content:center;
+    margin-top:22px;
+  }
+  .again-btn{
+    font-family:'Manrope',sans-serif;
+    font-weight:800;
+    font-size:14.5px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    padding:12px 24px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  .hint{
+    text-align:center;
+    font-size:14px;
+    color:#a35c80;
+    margin-top:16px;
+    font-weight:600;
+  }
+
+  footer{
+    position:relative;z-index:2;
+    text-align:center;
+    font-size:13px;
+    color:#a35c80;
+    margin-top:70px;
+    padding:0 24px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .card, .generate-btn, .chip{transition:none;}
+  }
+</style>
+</head>
+<body>
+
+  <!-- formas abstractas de fondo -->
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#331521" stroke-width="3" opacity="0.5"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffab8a" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#e0308a" opacity="0.85"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:120px; right:60px;">
+    <svg width="160" height="60" viewBox="0 0 160 60"><path d="M2 30 Q 20 2, 40 30 T 78 30 T 116 30 T 154 30" stroke="#a6224a" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Sala maternal · Recurso docente</span>
+    <h1>Generador de<br><span>propuestas</span></h1>
+    <p class="lede">Elegí la sala y el área que querés trabajar. Cada toque te va a dar una propuesta concreta, con materiales, consigna y una idea para observar a los bebés en la actividad.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="group-row">
+          <button class="chip active" data-group="todas">Todas las salas</button>
+          <button class="chip" data-group="lactantes">Lactantes (45 días – 1 año)</button>
+          <button class="chip" data-group="deambuladores">Deambuladores (1 – 2 años)</button>
+          <button class="chip" data-group="dos">Sala de 2 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Área de la propuesta</span>
+        <div class="chip-row" id="area-row">
+          <button class="chip active" data-area="todas">Todas las áreas</button>
+          <button class="chip" data-area="motriz-gruesa">Motricidad gruesa</button>
+          <button class="chip" data-area="motriz-fina">Motricidad fina</button>
+          <button class="chip" data-area="sensorial">Exploración sensorial</button>
+          <button class="chip" data-area="vinculo">Vínculo y lenguaje</button>
+          <button class="chip" data-area="autonomia">Autonomía</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {title:"Río de telas", area:"motriz-gruesa", groups:["lactantes","deambuladores"], badge:"Movimiento",
+    materials:["Telas largas de distintas texturas","Cesto bajo"],
+    dev:"Extendé las telas en el piso formando un camino. Invitá a gatear, reptar o caminar sobre ellas, sosteniendo la mano de quien lo necesite.",
+    tip:"Observá qué superficie elige cada bebé para desplazarse y cuánto tiempo permanece explorándola.",
+    duracion:"15–20 min", espacio:"Sala o patio con colchonetas"},
+  {title:"Túnel de cajas", area:"motriz-gruesa", groups:["deambuladores","dos"], badge:"Movimiento",
+    materials:["2 o 3 cajas grandes sin fondo","Cinta para fijarlas"],
+    dev:"Armá un túnel corto y estable. Acompañá el primer pasaje y luego dejá que decidan si entran, rodean o miran desde afuera.",
+    tip:"Registrá si necesitan la mirada del adulto para animarse o si se lanzan solos.",
+    duracion:"20 min", espacio:"Sala amplia"},
+  {title:"Pelotas que ruedan distinto", area:"motriz-gruesa", groups:["lactantes","deambuladores","dos"], badge:"Movimiento",
+    materials:["Pelotas de distinto tamaño y peso","Rampa de cartón"],
+    dev:"Dejá las pelotas al alcance y una rampa baja. Mostrá cómo rodar una y esperá la iniciativa propia.",
+    tip:"Anotá qué pelota eligen repetidamente: puede indicar una preferencia sensorial o motriz.",
+    duracion:"15 min", espacio:"Sala"},
+  {title:"Frascos sonoros", area:"motriz-fina", groups:["deambuladores","dos"], badge:"Manipulación",
+    materials:["Frascos plásticos irrompibles","Arroz, semillas, cascabeles"],
+    dev:"Ofrecé los frascos cerrados con distintos sonidos. Acompañá el gesto de agitar, pasar de mano en mano y golpear suavemente.",
+    tip:"Fijate si logra sostener con una mano o necesita las dos, dato útil para el registro de trayectoria.",
+    duracion:"15 min", espacio:"Mesa baja o piso"},
+  {title:"Trasvasije con cucharas", area:"motriz-fina", groups:["dos"], badge:"Manipulación",
+    materials:["Recipientes chicos","Cucharas grandes","Garbanzos o bolitas de tela"],
+    dev:"Proponé pasar el material de un recipiente a otro con la cuchara. Empezá con objetos grandes antes de achicar el tamaño.",
+    tip:"Observá la pinza que usa para sostener la cuchara: da pistas sobre la maduración motriz fina.",
+    duracion:"20 min", espacio:"Mesa"},
+  {title:"Collage de texturas con manos", area:"motriz-fina", groups:["lactantes","deambuladores"], badge:"Manipulación",
+    materials:["Papeles de distinta textura","Cinta doble faz","Base de cartón"],
+    dev:"Pegá trozos de cinta al revés sobre el cartón y ofrecé los papeles para que los adhieran tocando cada textura.",
+    tip:"Observá cuánto tiempo sostiene el contacto con cada material antes de soltarlo.",
+    duracion:"15 min", espacio:"Mesa baja"},
+  {title:"Cesto de los tesoros", area:"sensorial", groups:["lactantes"], badge:"Exploración",
+    materials:["Cesto de mimbre bajo","8 a 10 objetos cotidianos de materiales naturales (madera, metal, tela)"],
+    dev:"Sentá a los bebés alrededor del cesto en el piso y dejá que elijan libremente, sin intervenir salvo que lo pidan.",
+    tip:"Elzbieta Goldschmied recomienda no intervenir: registrá qué objeto elige primero y cuánto sostiene la exploración.",
+    duracion:"20–25 min", espacio:"Piso, sala tranquila"},
+  {title:"Bandeja de harina y semillas", area:"sensorial", groups:["deambuladores","dos"], badge:"Exploración",
+    materials:["Bandeja honda","Harina, sémola o arena cinética","Utensilios de cocina viejos"],
+    dev:"Ofrecé la bandeja en el piso o mesa baja. Dejá tiempo de exploración libre antes de proponer alguna consigna.",
+    tip:"Observá si el contacto con la textura genera rechazo, curiosidad o exploración sostenida.",
+    duracion:"20 min", espacio:"Espacio de fácil limpieza"},
+  {title:"Botellas sensoriales", area:"sensorial", groups:["lactantes","deambuladores"], badge:"Exploración",
+    materials:["Botellas plásticas selladas con pegamento fuerte","Agua, aceite, purpurina, bolitas"],
+    dev:"Dejá las botellas al alcance para que las manipulen, giren y observen el movimiento del contenido.",
+    tip:"Anotá si sigue el objeto con la mirada al inclinar la botella: indicador de seguimiento visual.",
+    duracion:"10–15 min", espacio:"Piso"},
+  {title:"Juego con hielo coloreado", area:"sensorial", groups:["dos"], badge:"Exploración",
+    materials:["Cubos de hielo con colorante vegetal","Bandeja honda"],
+    dev:"Presentá los hielos en la bandeja y acompañá la sorpresa del frío, el color que se diluye y el cambio de estado.",
+    tip:"Observá cómo verbaliza o gesticula la sensación de frío: insumo para el área de lenguaje.",
+    duracion:"10 min", espacio:"Mesa con protección"},
+  {title:"Canción con nombre propio", area:"vinculo", groups:["lactantes"], badge:"Vínculo",
+    materials:["Ninguno"],
+    dev:"Cantá una melodía simple incluyendo el nombre de cada bebé mientras sostenés contacto visual y táctil suave.",
+    tip:"Registrá si responde con sonrisa, balbuceo o búsqueda de la mirada: indicadores tempranos de vínculo.",
+    duracion:"5 min por bebé", espacio:"Mudador o piso"},
+  {title:"Libro de imágenes reales", area:"vinculo", groups:["deambuladores","dos"], badge:"Vínculo",
+    materials:["Libro de tela o cartón con fotos de objetos cotidianos"],
+    dev:"Sentate en el piso a upa o al lado, nombrá cada imagen despacio y esperá su respuesta antes de pasar la página.",
+    tip:"Anotá si señala, repite el sonido inicial de la palabra o solo mira: da información sobre el lenguaje comprensivo.",
+    duracion:"10 min", espacio:"Rincón de lectura"},
+  {title:"Espejo y gestos", area:"vinculo", groups:["lactantes","deambuladores"], badge:"Vínculo",
+    materials:["Espejo irrompible de sala"],
+    dev:"Frente al espejo, nombrá partes del cuerpo y hacé gestos simples (aplaudir, saludar) invitando a imitar.",
+    tip:"Observá si busca su propia imagen o la del adulto reflejada: dato para el desarrollo de la identidad corporal.",
+    duracion:"10 min", espacio:"Sala"},
+  {title:"Ronda de nombres con pelota", area:"vinculo", groups:["dos"], badge:"Vínculo",
+    materials:["Pelota blanda"],
+    dev:"Sentados en ronda, pasá la pelota nombrando a quien la recibe y esperá que intente decir el nombre siguiente.",
+    tip:"Registrá quién necesita apoyo verbal del adulto para nombrar a un compañero.",
+    duracion:"10 min", espacio:"Piso, ronda"},
+  {title:"Me saco los zapatos solo", area:"autonomia", groups:["deambuladores","dos"], badge:"Autonomía",
+    materials:["Banquito bajo"],
+    dev:"En el momento de la siesta, proponé intentar sacarse los zapatos antes de ayudar, verbalizando cada paso.",
+    tip:"Anotá qué parte logra resolver sola y en cuál pide ayuda: insumo directo para el registro de trayectoria.",
+    duracion:"5 min", espacio:"Sala de siesta"},
+  {title:"Sirvo mi agua", area:"autonomia", groups:["dos"], badge:"Autonomía",
+    materials:["Jarra chica con poca agua","Vaso irrompible"],
+    dev:"En la merienda, ofrecé servir su propio vaso con supervisión cercana, permitiendo el ensayo y error.",
+    tip:"Observá el control del pulso al inclinar la jarra: dato de motricidad fina y autonomía combinados.",
+    duracion:"5–10 min", espacio:"Mesa de merienda"},
+  {title:"Guardo lo que usé", area:"autonomia", groups:["deambuladores","dos"], badge:"Autonomía",
+    materials:["Cestos identificados con imágenes"],
+    dev:"Al finalizar el juego, cantá una canción de orden e invitá a guardar un objeto por vez, acompañando sin resolver por ellos.",
+    tip:"Registrá si sostiene la consigna hasta el final o necesita reiteración: indicador de atención sostenida.",
+    duracion:"10 min", espacio:"Sala"},
+  {title:"Me lavo las manos solo", area:"autonomia", groups:["lactantes","deambuladores"], badge:"Autonomía",
+    materials:["Pileta baja o palangana","Jabón líquido"],
+    dev:"Antes de comer, sostené las manos con las tuyas al principio y soltá de a poco para que termine el gesto solo.",
+    tip:"Anotá el grado de ayuda física que aún necesita: comparalo mes a mes en la ficha de seguimiento.",
+    duracion:"5 min", espacio:"Baño de sala"},
+
+  {title:"Circuito de almohadones", area:"motriz-gruesa", groups:["deambuladores","dos"], badge:"Movimiento",
+    materials:["Almohadones de distinta altura","Colchonetas"],
+    dev:"Armá un recorrido bajo con almohadones para subir, bajar y sortear. Acompañá el primer pasaje sosteniendo la mano.",
+    tip:"Observá cómo resuelve el cambio de altura: si busca apoyo en manos y pies o solo con los pies.",
+    duracion:"20 min", espacio:"Sala con colchonetas"},
+  {title:"Caminar sobre la línea", area:"motriz-gruesa", groups:["dos"], badge:"Movimiento",
+    materials:["Cinta de papel ancha"],
+    dev:"Pegá una línea sinuosa en el piso e invitá a caminar sobre ella, primero con ayuda de la mano y después solos.",
+    tip:"Registrá el equilibrio: si corrige con los brazos abiertos o se cae repetidamente en la misma zona.",
+    duracion:"15 min", espacio:"Sala"},
+  {title:"Aros para saltar y pisar", area:"motriz-gruesa", groups:["dos"], badge:"Movimiento",
+    materials:["Aros de tela o plástico"],
+    dev:"Distribuí los aros en el piso separados. Proponé pisar dentro de cada uno, luego animar a saltar con los dos pies juntos.",
+    tip:"Anotá si despega los dos pies del piso o todavía camina de aro en aro.",
+    duracion:"15 min", espacio:"Patio o sala amplia"},
+  {title:"Arrastre con soga", area:"motriz-gruesa", groups:["lactantes","deambuladores"], badge:"Movimiento",
+    materials:["Soga gruesa y blanda","Muñeco o cesto liviano atado"],
+    dev:"Mostrá cómo tirar de la soga para acercar el objeto atado. Dejá que repita el gesto de tironear con distinta fuerza.",
+    tip:"Observá si coordina ambas manos o predomina una: dato para el registro de lateralidad temprana.",
+    duracion:"10 min", espacio:"Piso"},
+  {title:"Subo y bajo el escalón", area:"motriz-gruesa", groups:["deambuladores","dos"], badge:"Movimiento",
+    materials:["Escalón bajo o cajón resistente"],
+    dev:"Acompañá el ascenso y descenso tomando ambas manos al principio, luego una sola, luego ninguna si el niño lo permite.",
+    tip:"Registrá si alterna los pies al subir o sube con el mismo pie siempre: indicador motor a seguir en el tiempo.",
+    duracion:"15 min", espacio:"Sala"},
+  {title:"Persecución de burbujas", area:"motriz-gruesa", groups:["deambuladores","dos"], badge:"Movimiento",
+    materials:["Burbujero"],
+    dev:"Soplá burbujas a distintas alturas y velocidades. Invitá a perseguirlas, pisarlas o atraparlas con las manos.",
+    tip:"Observá el seguimiento visual y la coordinación mano-ojo al intentar atraparlas.",
+    duracion:"15 min", espacio:"Patio"},
+  {title:"Volteretas asistidas en colchoneta", area:"motriz-gruesa", groups:["lactantes","deambuladores"], badge:"Movimiento",
+    materials:["Colchoneta blanda"],
+    dev:"Sobre la colchoneta, ayudá a rodar de espalda a panza y viceversa, nombrando el movimiento mientras lo hacen.",
+    tip:"Anotá si inicia el giro por sí mismo o necesita el impulso completo del adulto.",
+    duracion:"10 min", espacio:"Sala con colchoneta"},
+
+  {title:"Enhebrado de aros grandes", area:"motriz-fina", groups:["dos"], badge:"Manipulación",
+    materials:["Aros grandes de plástico","Palo o cono de cartón"],
+    dev:"Proponé insertar los aros en el palo, uno a la vez. Empezá con aros grandes antes de pasar a más chicos.",
+    tip:"Observá la coordinación ojo-mano al calcular la distancia para insertar el aro.",
+    duracion:"15 min", espacio:"Mesa"},
+  {title:"Pinza con broches de ropa", area:"motriz-fina", groups:["dos"], badge:"Manipulación",
+    materials:["Broches de ropa grandes","Caja de cartón con borde"],
+    dev:"Mostrá cómo apretar el broche con dos dedos y engancharlo en el borde de la caja. Dejá que ensaye el gesto varias veces.",
+    tip:"Registrá si logra el gesto de pinza con dos dedos o usa toda la mano: dato clave para la ficha motriz fina.",
+    duracion:"15 min", espacio:"Mesa"},
+  {title:"Rasgado de papel", area:"motriz-fina", groups:["deambuladores","dos"], badge:"Manipulación",
+    materials:["Hojas de diario o revistas","Cesto grande"],
+    dev:"Mostrá el gesto de rasgar con ambas manos en direcciones opuestas. Dejá que los trozos caigan en el cesto.",
+    tip:"Observá si usa las dos manos en oposición o solo arruga el papel con una.",
+    duracion:"10 min", espacio:"Mesa o piso"},
+  {title:"Apilar vasos plásticos", area:"motriz-fina", groups:["deambuladores","dos"], badge:"Manipulación",
+    materials:["Vasos plásticos irrompibles de colores"],
+    dev:"Apilá dos o tres vasos como ejemplo y dejá que continúe la torre o la arme desde cero.",
+    tip:"Anotá cuántos vasos logra apilar antes de que se caiga la torre: comparable mes a mes.",
+    duracion:"15 min", espacio:"Mesa baja o piso"},
+  {title:"Tapar y destapar frascos", area:"motriz-fina", groups:["deambuladores","dos"], badge:"Manipulación",
+    materials:["Frascos plásticos de boca ancha con tapa"],
+    dev:"Mostrá el gesto de girar la tapa. Dejá que intente destapar primero, que suele ser más fácil, y luego tapar.",
+    tip:"Observá si coordina el giro de muñeca o tira/empuja la tapa sin rotarla.",
+    duracion:"15 min", espacio:"Mesa"},
+  {title:"Garabateo con crayones gruesos", area:"motriz-fina", groups:["deambuladores","dos"], badge:"Manipulación",
+    materials:["Crayones gruesos atóxicos","Hojas grandes"],
+    dev:"Ofrecé el crayón y una hoja grande. Acompañá el primer trazo sin dirigir la mano, solo si lo pide.",
+    tip:"Registrá el tipo de agarre (palmar o de pinza) y si el trazo tiene intención de dibujo o es exploratorio.",
+    duracion:"15 min", espacio:"Mesa"},
+  {title:"Encastre de formas simples", area:"motriz-fina", groups:["dos"], badge:"Manipulación",
+    materials:["Tablero de encastre con formas grandes (círculo, cuadrado, triángulo)"],
+    dev:"Mostrá una forma y su lugar. Dejá que pruebe por ensayo y error antes de intervenir con ayuda verbal.",
+    tip:"Anotá si rota la pieza para que encaje o la fuerza en el lugar equivocado: dato de resolución de problemas.",
+    duracion:"15 min", espacio:"Mesa"},
+
+  {title:"Caja de luz con objetos translúcidos", area:"sensorial", groups:["lactantes","deambuladores"], badge:"Exploración",
+    materials:["Caja de luz o linterna bajo vidrio esmerilado","Objetos translúcidos de colores"],
+    dev:"Colocá los objetos sobre la superficie iluminada y dejá que los toque, mueva y observe cómo cambia la luz.",
+    tip:"Observá la atención sostenida frente al estímulo visual y si busca repetir el efecto de mover el objeto.",
+    duracion:"10–15 min", espacio:"Sala con poca luz"},
+  {title:"Masa de sal casera", area:"sensorial", groups:["dos"], badge:"Exploración",
+    materials:["Masa de sal (harina, sal, agua)","Mesa o bandeja"],
+    dev:"Ofrecé la masa sin moldes al principio, para que explore amasar, apretar y estirar con las manos.",
+    tip:"Registrá si tolera la textura pegajosa o pide limpiarse las manos enseguida: dato sensorial a respetar.",
+    duracion:"20 min", espacio:"Mesa de fácil limpieza"},
+  {title:"Bolsas sensoriales selladas", area:"sensorial", groups:["lactantes","deambuladores"], badge:"Exploración",
+    materials:["Bolsas herméticas selladas con cinta","Gel, agua y colorante o purpurina"],
+    dev:"Pegá la bolsa sellada al piso o a una mesa baja y dejá que la presione, aplaste y explore el movimiento del contenido sin abrirla.",
+    tip:"Observá la reacción táctil sin el riesgo del contacto directo: útil para bebés muy sensibles a texturas.",
+    duracion:"10 min", espacio:"Piso o mesa"},
+  {title:"Paseo sensorial de olores", area:"sensorial", groups:["deambuladores","dos"], badge:"Exploración",
+    materials:["Frasquitos con algodón embebido en esencias suaves (vainilla, limón, lavanda)"],
+    dev:"Ofrecé un frasco por vez, acercalo despacio y nombrá el olor mientras observás la reacción antes de pasar al siguiente.",
+    tip:"Anotá qué gesto hace frente a cada olor: acercarse, alejarse o buscar oler de nuevo.",
+    duracion:"10 min", espacio:"Sala tranquila"},
+  {title:"Piedras y conchas para tocar", area:"sensorial", groups:["deambuladores","dos"], badge:"Exploración",
+    materials:["Piedras lisas grandes","Conchas marinas sin bordes filosos","Bandeja"],
+    dev:"Presentá los elementos en la bandeja y dejá tiempo de manipulación libre antes de proponer agrupar por tamaño o textura.",
+    tip:"Observá si distingue diferencias de peso y temperatura entre los materiales.",
+    duracion:"15 min", espacio:"Mesa o piso"},
+  {title:"Espuma de afeitar en bandeja", area:"sensorial", groups:["dos"], badge:"Exploración",
+    materials:["Espuma de afeitar sin perfume","Bandeja honda"],
+    dev:"Extendé la espuma en la bandeja y dejá que dibuje con los dedos, la aplaste o mezcle colorante vegetal.",
+    tip:"Registrá la tolerancia a la textura y si sostiene la exploración o busca limpiarse enseguida.",
+    duracion:"15 min", espacio:"Mesa de fácil limpieza"},
+
+  {title:"Cucú, ¿dónde está?", area:"vinculo", groups:["lactantes"], badge:"Vínculo",
+    materials:["Tela liviana o las propias manos"],
+    dev:"Cubrí tu cara con la tela o las manos y descubrila diciendo '¡acá estoy!'. Repetí varias veces sosteniendo la expectativa.",
+    tip:"Observá si anticipa el momento de reaparición con sonrisa o balbuceo: indicador de permanencia del objeto.",
+    duracion:"5–10 min", espacio:"Mudador o piso"},
+  {title:"Masaje con canción", area:"vinculo", groups:["lactantes"], badge:"Vínculo",
+    materials:["Aceite neutro apto para bebés"],
+    dev:"En el momento del cambiado, dale un masaje suave en manos y pies mientras cantás una melodía baja y constante.",
+    tip:"Registrá el nivel de relajación corporal como indicador del estado de bienestar del bebé ese día.",
+    duracion:"5 min", espacio:"Mudador"},
+  {title:"Títere que saluda", area:"vinculo", groups:["deambuladores","dos"], badge:"Vínculo",
+    materials:["Títere de mano simple"],
+    dev:"Usá el títere para saludar a cada niño por su nombre al llegar a la sala, esperando su respuesta antes de seguir.",
+    tip:"Anotá si responde al títere con mirada, gesto o palabra: dato de interacción social temprana.",
+    duracion:"5 min por niño", espacio:"Entrada de sala"},
+  {title:"Álbum de fotos familiares", area:"vinculo", groups:["deambuladores","dos"], badge:"Vínculo",
+    materials:["Álbum chico con fotos que trajo cada familia"],
+    dev:"Sentate con el niño a mirar su álbum, nombrando a cada persona y esperando que él también intente nombrarla.",
+    tip:"Observá la expresión emocional al ver a sus referentes: insumo para el vínculo familia-jardín.",
+    duracion:"10 min", espacio:"Rincón tranquilo"},
+  {title:"Cuento con onomatopeyas", area:"vinculo", groups:["dos"], badge:"Vínculo",
+    materials:["Cuento corto con sonidos de animales u objetos"],
+    dev:"Narrá el cuento exagerando las onomatopeyas y haciendo pausas para que el grupo las repita con vos.",
+    tip:"Registrá quién repite el sonido, quién solo escucha y quién anticipa la onomatopeya antes de que la digas.",
+    duracion:"10 min", espacio:"Rincón de lectura"},
+  {title:"Ronda de caras y emociones", area:"vinculo", groups:["dos"], badge:"Vínculo",
+    materials:["Espejo o tarjetas con caras simples"],
+    dev:"Hacé una cara (alegre, sorprendida) y pedí que la imiten. Nombrá la emoción cada vez.",
+    tip:"Anotá si logra imitar el gesto y si asocia el nombre de la emoción con la expresión.",
+    duracion:"10 min", espacio:"Sala, en ronda"},
+
+  {title:"Elijo mi babero", area:"autonomia", groups:["lactantes","deambuladores"], badge:"Autonomía",
+    materials:["Dos baberos de distinto color o diseño"],
+    dev:"Antes de comer, mostrá dos baberos y esperá a que señale o tome uno, respetando la elección.",
+    tip:"Registrá si sostiene una preferencia constante o elige distinto cada vez: dato de personalidad emergente.",
+    duracion:"2 min", espacio:"Mesa de comida"},
+  {title:"Cuelgo mi mochila en mi percha", area:"autonomia", groups:["deambuladores","dos"], badge:"Autonomía",
+    materials:["Percheros bajos identificados con foto o nombre"],
+    dev:"Al llegar, acompañá a buscar su percha y colgar la mochila, guiando la mano solo si lo necesita.",
+    tip:"Anotá si reconoce su propio espacio identificado por imagen o necesita ayuda verbal cada vez.",
+    duracion:"3 min", espacio:"Entrada de sala"},
+  {title:"Me pongo la campera", area:"autonomia", groups:["dos"], badge:"Autonomía",
+    materials:["Campera del niño"],
+    dev:"Antes de salir al patio, proponé el método 'campera al revés en el piso' para que la voltee solo al ponérsela.",
+    tip:"Registrá qué parte de la secuencia logra sola: sostener, meter el brazo, voltear.",
+    duracion:"5 min", espacio:"Sala, antes de salir"},
+  {title:"Aviso que terminé de comer", area:"autonomia", groups:["deambuladores","dos"], badge:"Autonomía",
+    materials:["Ninguno"],
+    dev:"Enseñá un gesto simple (levantar la mano o decir 'listo') para avisar que terminó, en vez de que el adulto lo determine.",
+    tip:"Observá si empieza a anticipar y usar el gesto espontáneamente en los días siguientes.",
+    duracion:"En cada comida", espacio:"Mesa de comida"},
+  {title:"Elijo entre dos juguetes", area:"autonomia", groups:["lactantes","deambuladores"], badge:"Autonomía",
+    materials:["Dos juguetes bien diferenciados"],
+    dev:"Ofrecé ambos a la vista y esperá el gesto de elección (mirada sostenida, mano extendida) sin apurar la respuesta.",
+    tip:"Registrá el tiempo que toma decidir y si sostiene la elección al recibir el juguete.",
+    duracion:"3–5 min", espacio:"Piso"},
+  {title:"Tiro el papel en el cesto", area:"autonomia", groups:["deambuladores","dos"], badge:"Autonomía",
+    materials:["Cesto bajo identificado"],
+    dev:"Después de una actividad con papeles o servilletas, acompañá el gesto de caminar hasta el cesto y soltar el material adentro.",
+    tip:"Anotá si generaliza el gesto a otros momentos del día sin que se lo recuerden.",
+    duracion:"2 min", espacio:"Sala"}
+];
+
+let currentGroup = "todas";
+let currentArea = "todas";
+
+const groupRow = document.getElementById("group-row");
+const areaRow = document.getElementById("area-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+groupRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  groupRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentGroup = btn.dataset.group;
+});
+
+areaRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  areaRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentArea = btn.dataset.area;
+});
+
+const badgeColors = {
+  "motriz-gruesa":"var(--coral)",
+  "motriz-fina":"var(--yellow)",
+  "sensorial":"var(--grape)",
+  "vinculo":"var(--magenta)",
+  "autonomia":"var(--teal)"
+};
+const areaLabels = {
+  "motriz-gruesa":"Motricidad gruesa",
+  "motriz-fina":"Motricidad fina",
+  "sensorial":"Exploración sensorial",
+  "vinculo":"Vínculo y lenguaje",
+  "autonomia":"Autonomía"
+};
+const groupLabels = {
+  "lactantes":"Lactantes",
+  "deambuladores":"Deambuladores",
+  "dos":"Sala de 2 años"
+};
+
+let lastIndex = -1;
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const groupOk = currentGroup === "todas" || a.groups.includes(currentGroup);
+    const areaOk = currentArea === "todas" || a.area === currentArea;
+    return groupOk && areaOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const accentShapes = [
+  '<svg viewBox="0 0 160 160" width="160" height="160"><polygon points="80,0 160,140 0,140" fill="var(--yellow)"/></svg>',
+  '<svg viewBox="0 0 160 160" width="160" height="160"><circle cx="80" cy="80" r="76" fill="var(--coral)"/></svg>',
+  '<svg viewBox="0 0 160 160" width="160" height="160"><rect x="20" y="20" width="120" height="120" rx="26" fill="var(--teal)" transform="rotate(12 80 80)"/></svg>',
+  '<svg viewBox="0 0 160 160" width="160" height="160"><path d="M0 90 Q40 20 80 90 T160 90 L160 160 L0 160 Z" fill="var(--grape)"/></svg>'
+];
+
+function render(activity){
+  const badgeColor = badgeColors[activity.area];
+  const groupsText = activity.groups.map(g => groupLabels[g]).join(" · ");
+  const shape = accentShapes[Math.floor(Math.random()*accentShapes.length)];
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-accent">${shape}</div>
+      <div class="card-top">
+        <span class="badge" style="background:${badgeColor}; ${activity.area==='sensorial'||activity.area==='vinculo'||activity.area==='autonomia' ? 'color:#fff;' : 'color:var(--ink);'}">${areaLabels[activity.area]}</span>
+        <span class="badge" style="background:transparent;">${groupsText}</span>
+      </div>
+      <h2>${activity.title}</h2>
+      <div class="card-section">
+        <h3>Materiales</h3>
+        <ul>${activity.materials.map(m => `<li>${m}</li>`).join("")}</ul>
+      </div>
+      <div class="card-section">
+        <h3>Propuesta</h3>
+        <p>${activity.dev}</p>
+      </div>
+      <div class="card-section">
+        <h3>Para observar</h3>
+        <p>${activity.tip}</p>
+      </div>
+      <div class="meta-row">
+        <span>⏱ ${activity.duracion}</span>
+        <span>📍 ${activity.espacio}</span>
+      </div>
+      <div class="watermark">© <span class="signature">Karina Doello</span> — Tecnología que abraza</div>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => {
+    document.getElementById("active-card").classList.add("show");
+  });
+  document.getElementById("again-btn").addEventListener("click", () => {
+    render(pickActivity());
+  });
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+</script>
+</body>
+</html>
