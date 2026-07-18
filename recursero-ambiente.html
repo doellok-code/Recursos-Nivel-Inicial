@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Ambiente Social y Natural</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Ambiente Social y Natural · Recurso docente</span>
+    <h1>Recursero de <em>ambiente</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> Desde la actualización 2022/2023, esta área se llama Ambiente Social y Natural (antes incluía "y Tecnológico"; lo digital ahora es transversal). Es área formal, organizada en cuatro bloques (Los seres vivos · Los objetos y la tecnología cotidiana · La vida social e institucional · Fenómenos naturales y paisaje), solo en Sala de 3, 4 y 5. En Sala de 1 y 2 años las propuestas son exploración informal del entorno, no contenidos curriculares del área.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"Vacío y lleno el cesto", desc:"Sacar y meter objetos livianos de un cesto, explorando la acción."},
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"Toco distintos materiales", desc:"Explorar objetos de madera, plástico y tela con las manos."},
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"Abro y cierro un frasco", desc:"Explorar la acción de abrir y cerrar un frasco de boca ancha."},
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"Objetos que suenan", desc:"Agitar distintos objetos cotidianos y descubrir cuáles hacen ruido."},
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"La linterna se enciende", desc:"Explorar el encendido y apagado de una linterna simple."},
+  {edad:1, categoria:"Exploración de objetos cotidianos", titulo:"El colador y el agua", desc:"Explorar cómo el agua pasa a través de un colador."},
+  {edad:1, categoria:"Seres vivos cercanos", titulo:"Tocamos una planta real", desc:"Tocar con cuidado las hojas de una planta de la sala."},
+  {edad:1, categoria:"Seres vivos cercanos", titulo:"Miramos peces en una pecera", desc:"Observar peces reales nadando en una pecera de la sala."},
+  {edad:1, categoria:"Seres vivos cercanos", titulo:"Escuchamos sonidos de animales", desc:"Escuchar audios breves de sonidos de animales conocidos."},
+  {edad:1, categoria:"Seres vivos cercanos", titulo:"Olemos una flor", desc:"Acercar una flor real para olerla con supervisión."},
+  {edad:1, categoria:"Seres vivos cercanos", titulo:"Regamos la planta de la sala", desc:"Participar del riego de una planta con una regadera chica."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"Reconozco a mi familia en fotos", desc:"Mirar fotos de la propia familia y reaccionar al reconocerlas."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"La rutina de la comida", desc:"Participar de los gestos de la rutina de comer: babero, cuchara, plato."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"Saludo a mis compañeros", desc:"Practicar el saludo al llegar y ver a los compañeros de sala."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"Objetos de la cocina de casa", desc:"Explorar réplicas de objetos de cocina: cuchara, taza, olla chica."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"El delantal de la seño", desc:"Observar y tocar el delantal de trabajo de la docente."},
+  {edad:1, categoria:"Vida cotidiana y social cercana", titulo:"Vamos de paseo por el jardín", desc:"Recorrido breve por otros espacios del jardín, upa o de la mano."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"Sentimos el sol y la sombra", desc:"Pasar de un lugar soleado a uno con sombra y notar la diferencia."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"El viento mueve la tela", desc:"Observar cómo el viento mueve una tela liviana colgada."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"Tocamos agua fría y tibia", desc:"Comparar sensaciones al tocar agua fría y agua tibia."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"Miramos caer la lluvia", desc:"Observar la lluvia desde la ventana de la sala con seguridad."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"Salimos a sentir el aire libre", desc:"Salir al patio a sentir el clima del día con la piel."},
+  {edad:1, categoria:"Fenómenos y paisaje simples", titulo:"La sombra que aparece", desc:"Observar la propia sombra proyectada en el piso en un día de sol."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"El hielo se derrite", desc:"Observar cómo un cubo de hielo cambia mientras se derrite."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"La masa cambia de forma", desc:"Explorar cómo la masa cambia de forma al apretarla."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"Mezclamos agua y harina", desc:"Explorar el cambio de textura al mezclar agua con harina."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"La fruta se pela", desc:"Observar cómo cambia una fruta cuando se le saca la cáscara."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"El papel se arruga", desc:"Explorar cómo cambia el papel al arrugarlo y volver a extenderlo."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"El globo se infla", desc:"Observar cómo cambia de tamaño un globo mientras se infla despacio."},
+  {edad:1, categoria:"Objetos y transformaciones simples", titulo:"La esponja absorbe agua", desc:"Explorar cómo una esponja cambia de peso al absorber agua."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"Uso una linterna para buscar", desc:"Buscar objetos escondidos en la sala oscurecida con una linterna."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"El teléfono y sus botones", desc:"Explorar un teléfono de juguete con botones que suenan."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"La balanza de cocina", desc:"Explorar el uso simple de una balanza de cocina de juguete."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"El molinillo de café", desc:"Explorar objetos con manivela que producen un movimiento."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"La videollamada con la familia", desc:"Participar de una videollamada breve y reconocer a quien aparece."},
+  {edad:2, categoria:"Exploración de objetos y tecnología", titulo:"Herramientas de carpintero de juguete", desc:"Explorar herramientas de juguete y para qué se usa cada una."},
+  {edad:2, categoria:"Seres vivos y sus características", titulo:"Comparamos dos plantas", desc:"Comparar el tamaño y la forma de las hojas de dos plantas distintas."},
+  {edad:2, categoria:"Seres vivos y sus características", titulo:"¿Cómo se mueve cada animal?", desc:"Observar videos breves de animales y cómo se desplaza cada uno."},
+  {edad:2, categoria:"Seres vivos y sus características", titulo:"Cuidamos una mascota de la sala", desc:"Participar del cuidado simple de un pez o una planta de sala."},
+  {edad:2, categoria:"Seres vivos y sus características", titulo:"¿Qué comen los animales?", desc:"Relacionar animales conocidos con el alimento que comen."},
+  {edad:2, categoria:"Seres vivos y sus características", titulo:"Sembramos una semilla", desc:"Sembrar una semilla en un vaso y observar los primeros días."},
+  {edad:2, categoria:"Vida social e institucional cercana", titulo:"Conocemos la cocina del jardín", desc:"Visitar y observar el espacio de cocina del jardín con la cocinera."},
+  {edad:2, categoria:"Vida social e institucional cercana", titulo:"El trabajo del portero", desc:"Conversar sobre las tareas del personal auxiliar del jardín."},
+  {edad:2, categoria:"Vida social e institucional cercana", titulo:"Mi casa y la de un compañero", desc:"Comparar oralmente cómo es la propia casa y la de un compañero."},
+  {edad:2, categoria:"Vida social e institucional cercana", titulo:"Vamos a la verdulería", desc:"Simular en el juego dramático una visita a la verdulería."},
+  {edad:2, categoria:"Vida social e institucional cercana", titulo:"Objetos de distintos oficios", desc:"Explorar objetos asociados a oficios: médico, cocinero, bombero."},
+  {edad:2, categoria:"Fenómenos naturales y paisaje", titulo:"Día soleado o nublado", desc:"Observar el cielo cada mañana y registrar con un dibujo simple."},
+  {edad:2, categoria:"Fenómenos naturales y paisaje", titulo:"El agua se puede congelar", desc:"Observar cómo el agua se transforma en hielo en el freezer."},
+  {edad:2, categoria:"Fenómenos naturales y paisaje", titulo:"Recolectamos hojas del patio", desc:"Salir a juntar hojas caídas y observar sus diferencias."},
+  {edad:2, categoria:"Fenómenos naturales y paisaje", titulo:"¿Frío o calor hoy?", desc:"Vestir a un muñeco según el clima del día observado."},
+  {edad:2, categoria:"Fenómenos naturales y paisaje", titulo:"Miramos el paisaje del barrio", desc:"Observar desde la ventana los elementos del paisaje cercano."},
+  {edad:2, categoria:"Objetos y transformaciciones", titulo:"Cocinamos algo simple juntos", desc:"Participar de una preparación simple, como una gelatina."},
+  {edad:2, categoria:"Objetos y transformaciciones", titulo:"La vela se derrite", desc:"Observar con distancia segura cómo se derrite una vela encendida."},
+  {edad:2, categoria:"Objetos y transformaciciones", titulo:"Mezclamos colores de pintura", desc:"Explorar qué color nuevo se forma al mezclar dos colores."},
+  {edad:2, categoria:"Objetos y transformaciciones", titulo:"El pan crece con la levadura", desc:"Observar a lo largo del día cómo crece una masa con levadura."},
+  {edad:2, categoria:"Objetos y transformaciciones", titulo:"La ropa se seca al sol", desc:"Colgar ropa mojada y observar el proceso de secado durante el día."},
+  {edad:2, categoria:"Vida cotidiana y rutinas", titulo:"Ponemos la mesa entre todos", desc:"Colaborar en poner la mesa antes de la merienda."},
+  {edad:2, categoria:"Vida cotidiana y rutinas", titulo:"El calendario de la semana", desc:"Marcar cada día en un calendario simple de la sala."},
+  {edad:2, categoria:"Vida cotidiana y rutinas", titulo:"Guardamos los juguetes por tipo", desc:"Ordenar los juguetes en su lugar correspondiente al finalizar el juego."},
+  {edad:2, categoria:"Vida cotidiana y rutinas", titulo:"Reconozco señales de tránsito simples", desc:"Reconocer el semáforo y su significado en un paseo simulado."},
+  {edad:3, categoria:"Los seres vivos", titulo:"¿Qué necesitan las plantas?", desc:"Observar y registrar qué necesita una planta de la sala para crecer."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Animales de dos patas y cuatro patas", desc:"Clasificar animales conocidos según la cantidad de patas."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Visita a una granja cercana", desc:"Realizar o simular una visita a una granja para observar animales."},
+  {edad:3, categoria:"Los seres vivos", titulo:"¿Dónde vive cada animal?", desc:"Relacionar animales con el ambiente donde viven habitualmente."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Cuidamos nuestra huerta de sala", desc:"Participar en la siembra y el cuidado de una huerta pequeña."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Comparamos crías y adultos", desc:"Observar imágenes de animales bebés y adultos, y comparar diferencias."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"¿Para qué sirve cada objeto?", desc:"Relacionar objetos tecnológicos cotidianos con su función."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"Objetos de antes y de ahora", desc:"Comparar objetos actuales con objetos antiguos similares (traídos o en imágenes)."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"¿Cómo llega el agua a la canilla?", desc:"Conversar de forma simple sobre el recorrido del agua hasta casa."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"Desarmamos un objeto en desuso", desc:"Explorar con supervisión las partes de un aparato simple en desuso."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"¿Con pilas o con enchufe?", desc:"Clasificar objetos tecnológicos según cómo funcionan."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Conocemos otros trabajos del jardín", desc:"Entrevistar a un adulto del jardín sobre su tarea diaria."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Las instituciones de mi barrio", desc:"Reconocer instituciones cercanas: escuela, hospital, comisaría."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Objetos que usan distintos trabajadores", desc:"Relacionar herramientas con el oficio que las utiliza."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"¿Cómo era el barrio antes?", desc:"Conversar con una familia sobre cómo era el barrio hace años."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"El almacén de barrio", desc:"Simular en el juego dramático las tareas de un almacén."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Objetos con historia familiar", desc:"Traer un objeto familiar y contar su historia al grupo."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"Observamos el cielo cada día", desc:"Registrar en un cuadro simple el clima observado cada jornada."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"¿Qué pasa en cada estación?", desc:"Relacionar imágenes de paisajes con la estación del año correspondiente."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"El día y la noche", desc:"Conversar sobre las diferencias entre el día y la noche."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"Paisajes distintos al nuestro", desc:"Observar imágenes de paisajes distintos: montaña, mar, campo."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"La sombra a lo largo del día", desc:"Observar cómo cambia una sombra en distintos momentos del día."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Ciclo de vida de una planta", desc:"Registrar en secuencia de imágenes el crecimiento de una planta sembrada."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Comparamos hábitats distintos", desc:"Comparar las características de dos ambientes: acuático y terrestre."},
+  {edad:4, categoria:"Los seres vivos", titulo:"¿Cómo se reproducen los animales?", desc:"Conversar de forma simple sobre huevos y crías vivas según el animal."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Clasificamos animales por cobertura", desc:"Agrupar animales según tengan plumas, pelos o escamas."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Entrevistamos a un veterinario", desc:"Recibir la visita de un veterinario o profesional que cuide animales."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Registramos el crecimiento de la huerta", desc:"Medir y registrar el crecimiento de plantas de la huerta de sala."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"¿Cómo funciona un electrodoméstico?", desc:"Investigar de forma simple el funcionamiento de un objeto de casa."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"Comparamos medios de comunicación", desc:"Comparar cómo se comunicaban las familias antes y ahora."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"El circuito de la basura", desc:"Conversar sobre a dónde va la basura que se genera en el jardín."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"Objetos que ayudan a distintas tareas", desc:"Clasificar herramientas según la tarea para la que fueron creadas."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"Entrevistamos a alguien que repara objetos", desc:"Recibir a un adulto que explique cómo arregla objetos rotos."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"¿Cómo se organiza el jardín?", desc:"Investigar los distintos roles de trabajo dentro de la institución."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"Instituciones y sus funciones", desc:"Relacionar instituciones del barrio con la función que cumplen."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"Historias de nuestras familias", desc:"Recopilar y compartir historias familiares sobre la localidad."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"¿Cómo era Escobar hace años?", desc:"Investigar con imágenes cómo era la localidad tiempo atrás."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"Simulamos un negocio del barrio", desc:"Organizar un juego dramático de un comercio con roles definidos."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"Objetos y costumbres familiares", desc:"Comparar costumbres familiares distintas dentro del mismo grupo."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"Registramos el clima del mes", desc:"Llevar un registro mensual simple del clima observado cada día."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"Comparamos paisajes según el clima", desc:"Relacionar tipos de paisaje con las condiciones climáticas típicas."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"¿Por qué cambian las estaciones?", desc:"Conversar de forma simple sobre el ciclo de las estaciones del año."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"Investigamos un fenómeno natural", desc:"Investigar en grupo un fenómeno simple: arcoíris, viento, marea."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"El paisaje de nuestra zona", desc:"Describir las características del paisaje de la propia localidad."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Cadenas alimentarias simples", desc:"Relacionar de forma simple quién come a quién en un ambiente conocido."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Comparamos seres vivos y objetos", desc:"Distinguir características de los seres vivos frente a los objetos inertes."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Investigamos una especie en peligro", desc:"Investigar en grupo sobre una especie local en riesgo de extinción."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Diseñamos un cuidado responsable", desc:"Proponer acciones concretas de cuidado de plantas y animales de sala."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Comparamos ecosistemas argentinos", desc:"Comparar imágenes de distintos ecosistemas del país."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Entrevistamos a un biólogo o guardaparque", desc:"Recibir la visita de un profesional vinculado al cuidado ambiental."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"Investigamos un invento cotidiano", desc:"Investigar en grupo el origen de un objeto tecnológico cotidiano."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"El reciclaje en el jardín", desc:"Diseñar un sistema simple de separación de residuos en la sala."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"Comparamos tecnologías de comunicación", desc:"Comparar cartas, teléfono y videollamada como formas de comunicarse."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"¿Cómo se fabrica un objeto?", desc:"Investigar de forma simple el proceso de fabricación de un objeto conocido."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"Diseñamos un objeto útil", desc:"Diseñar en grupo un objeto simple que resuelva un problema de la sala."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Investigamos la historia del jardín", desc:"Investigar cómo y cuándo se fundó la institución."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Mapa de instituciones del barrio", desc:"Armar un mapa simple señalando instituciones cercanas conocidas."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Entrevistamos a un vecino mayor", desc:"Entrevistar a un adulto mayor sobre la historia del barrio."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Comparamos formas de trabajo", desc:"Comparar oficios y profesiones según las tareas que realizan."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Proyecto de mejora para el jardín", desc:"Proponer en grupo una mejora concreta para un espacio del jardín."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Diversidad de familias", desc:"Reconocer y valorar la diversidad de configuraciones familiares del grupo."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Investigamos el ciclo del agua", desc:"Investigar de forma simple las etapas del ciclo del agua."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Comparamos climas de Argentina", desc:"Comparar el clima de distintas regiones del país."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Registramos un fenómeno durante un mes", desc:"Sostener un registro de un fenómeno natural durante varias semanas."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Diseñamos un cuidado del ambiente", desc:"Proponer acciones concretas de cuidado del ambiente cercano."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Armamos un herbario simple", desc:"Recolectar y prensar hojas distintas para armar un herbario de sala."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"Objetos que se usan en la cocina", desc:"Reconocer para qué sirve cada utensilio de cocina explorado en sala."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Un día en la vida de un cartero", desc:"Conversar sobre las tareas de un cartero y simular su recorrido."},
+  {edad:3, categoria:"La vida social e institucional", titulo:"Visitamos la biblioteca del barrio", desc:"Realizar o simular una visita a la biblioteca popular cercana."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"¿Qué ropa usamos según el clima?", desc:"Relacionar prendas de vestir con las condiciones climáticas del día."},
+  {edad:3, categoria:"Fenómenos naturales y paisaje", titulo:"Charcos después de la lluvia", desc:"Observar y conversar sobre los charcos que deja la lluvia en el patio."},
+  {edad:3, categoria:"Los seres vivos", titulo:"Los insectos del patio", desc:"Observar con lupa insectos pequeños encontrados en el patio."},
+  {edad:3, categoria:"Los objetos y la tecnología cotidiana", titulo:"La linterna y las pilas", desc:"Explorar cómo las pilas hacen funcionar una linterna."},
+  {edad:4, categoria:"Los seres vivos", titulo:"Investigamos animales autóctonos", desc:"Investigar en grupo animales característicos de la región."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"La evolución del teléfono", desc:"Comparar teléfonos de distintas épocas a partir de imágenes."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"El trabajo en equipo del jardín", desc:"Reconocer cómo distintos roles del jardín colaboran entre sí."},
+  {edad:4, categoria:"La vida social e institucional", titulo:"Costumbres de distintas familias", desc:"Compartir una costumbre familiar propia con el grupo de sala."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"¿De dónde viene el agua de lluvia?", desc:"Conversar de forma simple sobre la formación de las nubes y la lluvia."},
+  {edad:4, categoria:"Fenómenos naturales y paisaje", titulo:"Comparamos el paisaje de día y de noche", desc:"Observar diferencias entre el paisaje diurno y nocturno."},
+  {edad:4, categoria:"Los seres vivos", titulo:"¿Qué comen las plantas?", desc:"Investigar de forma simple cómo se alimentan las plantas."},
+  {edad:4, categoria:"Los objetos y la tecnología cotidiana", titulo:"Objetos que facilitan tareas del hogar", desc:"Reconocer objetos tecnológicos que simplifican tareas cotidianas."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Investigamos la vida en el suelo", desc:"Investigar qué seres vivos habitan en la tierra del jardín."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"Historia de un objeto tecnológico", desc:"Investigar cómo cambió un objeto tecnológico a lo largo del tiempo."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Proyecto solidario de sala", desc:"Organizar una acción solidaria simple para la comunidad del jardín."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Comparamos paisajes urbanos y rurales", desc:"Comparar características entre un paisaje urbano y uno rural."},
+  {edad:5, categoria:"Los seres vivos", titulo:"Diseñamos un refugio para pájaros", desc:"Diseñar y construir un refugio simple para aves del patio."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Entrevistamos a una autoridad del jardín", desc:"Entrevistar a la directora o secretaria sobre su función institucional."},
+  {edad:5, categoria:"Fenómenos naturales y paisaje", titulo:"Investigamos un desastre natural conocido", desc:"Conversar de forma cuidada sobre un fenómeno natural conocido por el grupo."},
+  {edad:5, categoria:"Los objetos y la tecnología cotidiana", titulo:"Diseñamos una campaña de cuidado", desc:"Diseñar una campaña simple de cuidado de un recurso natural."},
+  {edad:5, categoria:"La vida social e institucional", titulo:"Comparamos jardines de otras épocas", desc:"Comparar cómo era el jardín de infantes hace muchos años."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>
