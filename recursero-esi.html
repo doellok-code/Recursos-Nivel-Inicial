@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de ESI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">ESI · Recurso docente</span>
+    <h1>Recursero de <em>ESI</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> La ESI (Ley 26.150 / Ley provincial 14.744) no es un área independiente: es una perspectiva transversal a todas las áreas, y se trabaja en las cinco salas por igual, sin distinción formal/informal por edad. Organizada en los cinco ejes nacionales adaptados a Nivel Inicial: Cuidar el cuerpo y la salud · Valorar la afectividad · Garantizar la equidad de género · Respetar la diversidad · Ejercer nuestros derechos. Todo el contenido se formula desde el cuidado y la prevención, sin contenido sexual explícito.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Nombro las partes del cuerpo al bañarlo", desc:"Nombrar en voz alta cada parte del cuerpo, incluidas las íntimas, durante el baño o cambiado."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Cuido su cuerpo con delicadeza", desc:"Realizar el cambiado y la higiene con movimientos suaves, avisando antes de tocar."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconoce su rostro en el espejo", desc:"Explorar el propio rostro y cuerpo reflejado en un espejo bajo de sala."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Respeto su ritmo de sueño y hambre", desc:"Atender las señales propias del bebé sin forzar tiempos externos."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Aviso antes de tocarlo", desc:"Anticipar verbalmente cada gesto de cuidado antes de realizarlo."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconoce sensaciones de su cuerpo", desc:"Acompañar gestos simples ante frío, calor, hambre o incomodidad."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Recibe upa y contacto afectivo", desc:"Sostener momentos diarios de upa y contacto corporal afectuoso."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Responde a su llanto con ternura", desc:"Atender el llanto con voz calma y contacto corporal contenedor."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Comparte miradas y sonrisas", desc:"Sostener intercambios de mirada y sonrisa como base del vínculo afectivo."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Escucha su nombre con cariño", desc:"Ser nombrado con cariño en distintos momentos de la rutina diaria."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Recibe consuelo ante el malestar", desc:"Ser consolado con calma y presencia sostenida ante el malestar."},
+  {edad:1, categoria:"Garantizar la equidad de género", titulo:"Juega con distintos juguetes sin distinción", desc:"Ofrecer libremente todo tipo de juguetes, sin distinción de género."},
+  {edad:1, categoria:"Garantizar la equidad de género", titulo:"Usa colores y prendas sin distinción", desc:"Vestir y decorar el espacio sin asociar colores a un género determinado."},
+  {edad:1, categoria:"Garantizar la equidad de género", titulo:"Recibe el mismo trato de cuidado", desc:"Recibir el mismo tipo de contacto afectivo y de cuidado, sin distinción de género."},
+  {edad:1, categoria:"Respetar la diversidad", titulo:"Ve reflejadas distintas familias", desc:"Observar imágenes o fotos que muestren distintas configuraciones familiares."},
+  {edad:1, categoria:"Respetar la diversidad", titulo:"Explora distintos tonos de piel en muñecos", desc:"Jugar con muñecos de distintos tonos de piel disponibles en la sala."},
+  {edad:1, categoria:"Respetar la diversidad", titulo:"Es cuidado por distintos adultos de referencia", desc:"Vincularse con distintos adultos de la sala que participan de su cuidado."},
+  {edad:1, categoria:"Ejercer nuestros derechos", titulo:"Es escuchado ante su malestar", desc:"Recibir respuesta y atención cada vez que expresa malestar o necesidad."},
+  {edad:1, categoria:"Ejercer nuestros derechos", titulo:"Tiene un espacio seguro para jugar", desc:"Disponer de un espacio propio, seguro y preparado para su exploración."},
+  {edad:1, categoria:"Ejercer nuestros derechos", titulo:"Recibe cuidado sin apuro", desc:"Ser cuidado en los tiempos de higiene y alimentación sin apuro innecesario."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Explora su cuerpo con las manos", desc:"Explorar libremente el propio cuerpo con las manos en momentos de juego."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Es mecido con canciones", desc:"Ser mecido con canciones suaves como parte del vínculo afectivo diario."},
+  {edad:1, categoria:"Garantizar la equidad de género", titulo:"Explora todos los rincones de juego", desc:"Circular libremente por todos los sectores de juego de la sala."},
+  {edad:1, categoria:"Respetar la diversidad", titulo:"Escucha canciones en distintos idiomas o dialectos", desc:"Escuchar canciones de cuna en distintas lenguas o variantes regionales."},
+  {edad:1, categoria:"Ejercer nuestros derechos", titulo:"Descansa cuando lo necesita", desc:"Disponer de momentos de descanso respetando su propio ritmo."},
+  {edad:1, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconoce el agua tibia como cuidado", desc:"Asociar el momento del baño con una experiencia de cuidado agradable."},
+  {edad:1, categoria:"Valorar la afectividad", titulo:"Vive una despedida contenida", desc:"Sostener una rutina de despedida afectiva y predecible al retirarse la familia."},
+  {edad:1, categoria:"Garantizar la equidad de género", titulo:"Ve a distintos adultos realizar tareas de cuidado", desc:"Observar tanto a mujeres como a varones realizando tareas de cuidado en la sala."},
+  {edad:1, categoria:"Respetar la diversidad", titulo:"Es nombrado respetando su nombre elegido", desc:"Ser llamado siempre por el nombre que la familia indicó para él o ella."},
+  {edad:1, categoria:"Ejercer nuestros derechos", titulo:"Recibe alimento acorde a su ritmo", desc:"Ser alimentado respetando sus tiempos y señales de saciedad."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Nombro correctamente las partes del cuerpo", desc:"Nombrar todas las partes del cuerpo, incluidas las íntimas, con su nombre correcto."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco lo que me gusta y lo que no", desc:"Expresar con gestos o palabras simples lo que le agrada o incomoda."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Practico hábitos simples de higiene", desc:"Participar del lavado de manos y cuidado corporal con ayuda mínima."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco cuando algo me duele", desc:"Comunicar con palabras simples una molestia física propia."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Expreso cariño de distintas formas", desc:"Practicar gestos simples de cariño hacia adultos y compañeros conocidos."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Reconozco mis emociones básicas", desc:"Nombrar con ayuda si está contento, triste o enojado."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Recibo consuelo cuando lo necesito", desc:"Buscar y recibir consuelo de un adulto de referencia ante el malestar."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Comparto momentos de ternura con mis pares", desc:"Compartir gestos simples de cariño entre compañeros, como un abrazo."},
+  {edad:2, categoria:"Garantizar la equidad de género", titulo:"Juego libremente en todos los rincones", desc:"Elegir libremente entre rincón de construcción, dramatizaciones o arte, sin distinción de género."},
+  {edad:2, categoria:"Garantizar la equidad de género", titulo:"Veo cuentos con roles diversos", desc:"Escuchar cuentos donde distintos personajes cumplen tareas variadas, sin estereotipos."},
+  {edad:2, categoria:"Garantizar la equidad de género", titulo:"Elijo mis juegos sin condicionamientos", desc:"Elegir con qué juguete jugar sin que se le asigne por su género."},
+  {edad:2, categoria:"Respetar la diversidad", titulo:"Reconozco que las familias son distintas", desc:"Observar y comentar que las familias del grupo se organizan de formas diferentes."},
+  {edad:2, categoria:"Respetar la diversidad", titulo:"Comparto la sala con compañeros distintos a mí", desc:"Compartir el juego con compañeros de distintas características y capacidades."},
+  {edad:2, categoria:"Respetar la diversidad", titulo:"Escucho palabras en otros idiomas", desc:"Escuchar canciones o palabras simples en lenguas distintas a la propia."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Puedo decir que no me gusta algo", desc:"Practicar el gesto de decir 'no' ante algo que le resulta desagradable."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Tengo un lugar propio en la sala", desc:"Reconocer un espacio identificado como propio dentro de la sala."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Soy escuchado cuando hablo", desc:"Recibir atención y respuesta cada vez que intenta comunicar algo."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco mi cuerpo en el espejo", desc:"Explorar y nombrar partes del propio cuerpo frente al espejo."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Reconozco el cariño de mi familia", desc:"Compartir con el grupo cómo le demuestran cariño en su casa."},
+  {edad:2, categoria:"Garantizar la equidad de género", titulo:"Uso todos los colores disponibles", desc:"Elegir libremente materiales y colores para pintar o vestir muñecos."},
+  {edad:2, categoria:"Respetar la diversidad", titulo:"Reconozco distintos tipos de cuerpo", desc:"Observar con naturalidad que los cuerpos de las personas son diferentes entre sí."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Juego el tiempo que necesito", desc:"Disponer de tiempo suficiente para el juego dentro de la rutina diaria."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco que mi cuerpo es mío", desc:"Escuchar mensajes simples sobre que el propio cuerpo le pertenece a cada uno."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Distingo un abrazo lindo de uno que incomoda", desc:"Reconocer con ayuda si un contacto físico le resulta agradable o no."},
+  {edad:2, categoria:"Garantizar la equidad de género", titulo:"Veo a varones y mujeres en distintas tareas", desc:"Observar en imágenes a varones y mujeres realizando las mismas tareas."},
+  {edad:2, categoria:"Respetar la diversidad", titulo:"Aprendo sobre otra cultura simple", desc:"Conocer de forma simple una costumbre de otra cultura presente en el grupo."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Puedo pedir ayuda si algo me molesta", desc:"Practicar el gesto de acercarse a un adulto ante una molestia o conflicto."},
+  {edad:2, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco el cuidado de mi cuerpo en la comida", desc:"Participar de la rutina de alimentación reconociendo el cuidado que implica."},
+  {edad:2, categoria:"Valorar la afectividad", titulo:"Expreso afecto a través del juego", desc:"Compartir juegos simples de contacto afectivo acordado con un par."},
+  {edad:2, categoria:"Ejercer nuestros derechos", titulo:"Tengo derecho a jugar todos los días", desc:"Reconocer el juego diario como parte esperada y garantizada de su rutina."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Nombro mi cuerpo con las palabras correctas", desc:"Nombrar todas las partes del cuerpo, incluidas las genitales, con su nombre correcto."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco hábitos de cuidado personal", desc:"Practicar hábitos simples de higiene y cuidado del propio cuerpo con autonomía creciente."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Distingo partes públicas y privadas del cuerpo", desc:"Reconocer con ayuda qué partes del cuerpo son privadas y se cuidan especialmente."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco mi cuerpo como valioso", desc:"Escuchar mensajes que valoran el propio cuerpo tal como es."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Sé a quién avisar si algo me duele", desc:"Reconocer a qué adultos de la sala puede recurrir ante un dolor o molestia."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Reconozco y nombro mis emociones", desc:"Nombrar con mayor precisión emociones como alegría, tristeza, miedo o enojo."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Distingo un contacto que me gusta de uno que no", desc:"Reconocer y expresar si un contacto físico le resulta agradable o incómodo."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Practico el consentimiento en el juego", desc:"Preguntar antes de tocar o abrazar a un compañero, respetando su respuesta."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Reconozco distintas formas de querer", desc:"Reconocer que el cariño se expresa de formas diferentes según cada familia."},
+  {edad:3, categoria:"Garantizar la equidad de género", titulo:"Elijo mi juego sin etiquetas de género", desc:"Elegir libremente entre todos los rincones de juego disponibles, sin condicionamientos."},
+  {edad:3, categoria:"Garantizar la equidad de género", titulo:"Analizamos roles en un cuento", desc:"Conversar sobre los roles de los personajes de un cuento y si podrían ser distintos."},
+  {edad:3, categoria:"Garantizar la equidad de género", titulo:"Reconozco que todos podemos hacer las mismas tareas", desc:"Participar de tareas de sala sin distinción de género en su asignación."},
+  {edad:3, categoria:"Respetar la diversidad", titulo:"Compartimos cómo es cada una de nuestras familias", desc:"Compartir con el grupo la propia composición y organización familiar."},
+  {edad:3, categoria:"Respetar la diversidad", titulo:"Reconozco y valoro las diferencias del grupo", desc:"Reconocer y valorar diferencias físicas, culturales o de capacidades entre compañeros."},
+  {edad:3, categoria:"Respetar la diversidad", titulo:"Aprendo sobre una celebración de otra cultura", desc:"Conocer una celebración o costumbre de una cultura distinta a la propia."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Sé que puedo decir que no", desc:"Reconocer y practicar el derecho a decir que no ante algo que le incomoda."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Reconozco secretos que me hacen sentir mal", desc:"Distinguir con ayuda un secreto lindo de uno que genera malestar o miedo."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Sé a quién pedir ayuda en el jardín", desc:"Identificar a los adultos de la institución a quienes puede recurrir ante una necesidad."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Conozco que tengo derecho al buen trato", desc:"Escuchar mensajes simples sobre el derecho a ser tratado con respeto y cuidado."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco el cuidado del cuerpo en la naturaleza", desc:"Practicar hábitos de cuidado corporal en salidas al aire libre: sombra, agua, abrigo."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Expreso afecto respetando al otro", desc:"Practicar gestos de afecto respetando si el otro quiere o no recibirlos."},
+  {edad:3, categoria:"Garantizar la equidad de género", titulo:"Vemos referentes diversos en los cuentos", desc:"Conocer cuentos con personajes que desafían estereotipos de género tradicionales."},
+  {edad:3, categoria:"Respetar la diversidad", titulo:"Reconozco que no hay una única forma de familia", desc:"Escuchar y comentar distintas configuraciones familiares presentadas en imágenes."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Participo en decisiones simples de la sala", desc:"Participar de una decisión grupal simple, ejerciendo su derecho a opinar."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco cambios simples de mi cuerpo", desc:"Observar y comentar cambios simples del propio cuerpo, como el crecimiento."},
+  {edad:3, categoria:"Valorar la afectividad", titulo:"Reconozco el enojo como emoción válida", desc:"Aprender que el enojo es una emoción válida que se puede expresar sin lastimar."},
+  {edad:3, categoria:"Garantizar la equidad de género", titulo:"Compartimos tareas sin distinción", desc:"Participar de tareas de orden y cuidado de la sala sin asignación por género."},
+  {edad:3, categoria:"Respetar la diversidad", titulo:"Reconozco distintas capacidades entre compañeros", desc:"Reconocer con naturalidad que cada compañero tiene distintas habilidades y ritmos."},
+  {edad:3, categoria:"Ejercer nuestros derechos", titulo:"Sé que tengo derecho a jugar y descansar", desc:"Reconocer el juego y el descanso como derechos garantizados en su rutina diaria."},
+  {edad:3, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco la importancia de dormir bien", desc:"Conversar de forma simple sobre la importancia del descanso para el cuerpo."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Profundizo el conocimiento de mi cuerpo", desc:"Reconocer con mayor detalle las partes del cuerpo y sus funciones básicas."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Distingo el buen trato del maltrato", desc:"Reconocer con ejemplos simples la diferencia entre un trato cuidadoso y uno que lastima."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Sostengo hábitos de autocuidado", desc:"Sostener de forma más autónoma hábitos de higiene y cuidado personal."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco mi cuerpo como propio y valioso", desc:"Reforzar el mensaje de que el propio cuerpo le pertenece y merece respeto."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Identifico a mi red de adultos de confianza", desc:"Nombrar a distintos adultos de confianza dentro y fuera del jardín."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Reconozco y comunico emociones con mayor precisión", desc:"Nombrar con mayor precisión emociones propias y reconocerlas en otros."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Practico pedir y dar consentimiento", desc:"Practicar sistemáticamente el pedir permiso antes de un contacto físico con otro."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Reconozco que puedo poner límites con cariño", desc:"Practicar el poner un límite a otro sin dejar de ser respetuoso."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Distingo secretos lindos de secretos que incomodan", desc:"Distinguir con mayor claridad un secreto agradable de uno que genera malestar."},
+  {edad:4, categoria:"Garantizar la equidad de género", titulo:"Analizamos estereotipos en publicidades o cuentos", desc:"Conversar sobre estereotipos de género presentes en materiales cotidianos."},
+  {edad:4, categoria:"Garantizar la equidad de género", titulo:"Reconozco que las tareas no tienen género", desc:"Reflexionar sobre cómo las tareas domésticas y de cuidado pueden compartirse entre todos."},
+  {edad:4, categoria:"Garantizar la equidad de género", titulo:"Elegimos referentes diversos para investigar", desc:"Conocer personas diversas que desafían roles de género tradicionales en distintos oficios."},
+  {edad:4, categoria:"Respetar la diversidad", titulo:"Investigamos sobre distintas familias", desc:"Investigar y compartir información simple sobre distintas configuraciones familiares."},
+  {edad:4, categoria:"Respetar la diversidad", titulo:"Reconocemos y respetamos las capacidades diferentes", desc:"Reflexionar sobre cómo incluir a compañeros con capacidades diferentes en el juego."},
+  {edad:4, categoria:"Respetar la diversidad", titulo:"Conocemos costumbres de distintas culturas", desc:"Investigar en grupo una costumbre de una cultura distinta a la propia."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Reconozco mis derechos como niño o niña", desc:"Conocer de forma simple algunos derechos reconocidos en la Convención de los Derechos del Niño."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Practico decir que no ante lo que me incomoda", desc:"Sostener con mayor firmeza el derecho a decir que no ante algo incómodo."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Sé cómo pedir ayuda ante una situación difícil", desc:"Practicar cómo comunicar a un adulto de confianza una situación que le preocupa."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Reconozco mi derecho a ser escuchado", desc:"Participar de espacios donde su opinión es tenida en cuenta para decisiones grupales."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco la importancia de la alimentación saludable", desc:"Conversar sobre hábitos de alimentación saludable de forma simple y sin juicio."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Reconozco distintas formas de familia y de amor", desc:"Reconocer que el amor y el cuidado familiar se expresan de formas diversas."},
+  {edad:4, categoria:"Garantizar la equidad de género", titulo:"Jugamos intercambiando roles tradicionales", desc:"Practicar juegos dramáticos donde se intercambian roles tradicionalmente asignados por género."},
+  {edad:4, categoria:"Respetar la diversidad", titulo:"Reflexionamos sobre la discriminación", desc:"Conversar de forma simple sobre qué significa tratar mal a alguien por ser diferente."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Participamos en la construcción de acuerdos de buen trato", desc:"Colaborar en la construcción de acuerdos de sala sobre el buen trato entre todos."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco señales de alerta en mi cuerpo", desc:"Reconocer señales corporales simples que indican malestar o incomodidad."},
+  {edad:4, categoria:"Valorar la afectividad", titulo:"Practico la empatía ante el malestar de otro", desc:"Practicar el reconocer y acompañar el malestar emocional de un compañero."},
+  {edad:4, categoria:"Garantizar la equidad de género", titulo:"Cuestionamos frases estereotipadas", desc:"Conversar sobre frases cotidianas que asignan comportamientos según el género."},
+  {edad:4, categoria:"Respetar la diversidad", titulo:"Valoramos la diversidad corporal", desc:"Reconocer y valorar que los cuerpos son diversos en tamaño, color y capacidad."},
+  {edad:4, categoria:"Ejercer nuestros derechos", titulo:"Reconozco que tengo derecho a mi intimidad", desc:"Reconocer el derecho a la privacidad del propio cuerpo frente a otros."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Consolido el conocimiento de mi cuerpo", desc:"Reconocer con precisión las partes del cuerpo y explicar su cuidado básico."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Distingo el cuidado del cuerpo por parte de adultos de confianza", desc:"Reconocer qué situaciones de cuidado corporal son esperables y por parte de quién."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Sostengo hábitos de autocuidado con autonomía", desc:"Sostener de forma prácticamente autónoma hábitos saludables de higiene y descanso."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco mi cuerpo como parte de mi identidad", desc:"Reflexionar sobre el propio cuerpo como parte valiosa de la identidad personal."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Identifico con claridad mi red de adultos de confianza", desc:"Nombrar con claridad a los adultos de confianza a quienes puede recurrir siempre."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Reconozco y regulo mis emociones con mayor autonomía", desc:"Practicar estrategias simples para expresar y regular emociones intensas."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Sostengo el consentimiento en todos mis vínculos", desc:"Sostener sistemáticamente el pedir y respetar el consentimiento en el contacto físico."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Reconozco y comunico un límite con firmeza", desc:"Practicar la comunicación firme y respetuosa de un límite personal."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Distingo con claridad secretos que debo compartir con un adulto", desc:"Reconocer con claridad qué secretos deben comunicarse siempre a un adulto de confianza."},
+  {edad:5, categoria:"Garantizar la equidad de género", titulo:"Reflexionamos sobre la igualdad de oportunidades", desc:"Conversar sobre cómo todas las personas merecen las mismas oportunidades, sin distinción de género."},
+  {edad:5, categoria:"Garantizar la equidad de género", titulo:"Investigamos mujeres y varones que desafiaron estereotipos", desc:"Conocer historias de personas que desarrollaron tareas fuera de lo tradicionalmente esperado."},
+  {edad:5, categoria:"Garantizar la equidad de género", titulo:"Proponemos un juego libre de estereotipos", desc:"Diseñar en grupo un juego donde todos los roles estén disponibles para todos."},
+  {edad:5, categoria:"Respetar la diversidad", titulo:"Elaboramos un proyecto sobre las familias del grupo", desc:"Participar de un proyecto grupal que visibilice la diversidad familiar de la sala."},
+  {edad:5, categoria:"Respetar la diversidad", titulo:"Reflexionamos sobre el respeto a las diferencias", desc:"Participar de una conversación grupal sobre la importancia de respetar las diferencias."},
+  {edad:5, categoria:"Respetar la diversidad", titulo:"Investigamos sobre la diversidad cultural de nuestra comunidad", desc:"Investigar en grupo la diversidad cultural presente en la propia comunidad."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Conozco mis derechos y los de mis compañeros", desc:"Conocer y compartir derechos reconocidos para todos los niños y niñas."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Practico decir que no con seguridad", desc:"Sostener con seguridad y sin culpa el derecho a decir que no."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Sé cómo actuar ante una situación que me incomoda", desc:"Practicar una secuencia simple: decir que no, alejarse y contarle a un adulto de confianza."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Participo activamente en decisiones del grupo", desc:"Participar activamente en la toma de decisiones simples que afectan a todo el grupo."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco la importancia del descanso y el juego para mi salud", desc:"Reconocer el descanso y el juego como parte esencial del cuidado de la salud integral."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Reconozco distintas formas de expresar el amor familiar", desc:"Reflexionar sobre cómo cada familia expresa el afecto de manera propia y válida."},
+  {edad:5, categoria:"Garantizar la equidad de género", titulo:"Elaboramos un compromiso grupal de igualdad", desc:"Colaborar en la elaboración de un compromiso simple de trato igualitario en la sala."},
+  {edad:5, categoria:"Respetar la diversidad", titulo:"Organizamos una muestra sobre la diversidad del grupo", desc:"Participar de la organización de una muestra que celebre la diversidad del grupo de sala."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Reflexiono sobre mi derecho a la intimidad", desc:"Reconocer y valorar el derecho a la privacidad del propio cuerpo y sus pertenencias."},
+  {edad:5, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco cambios que ocurrirán en mi cuerpo", desc:"Conversar de forma simple y tranquilizadora sobre el crecimiento futuro del cuerpo."},
+  {edad:5, categoria:"Valorar la afectividad", titulo:"Practico el acompañamiento afectivo entre compañeros", desc:"Practicar el acompañar afectivamente a un compañero que atraviesa un momento difícil."},
+  {edad:5, categoria:"Garantizar la equidad de género", titulo:"Presentamos nuestras conclusiones sobre igualdad a otras salas", desc:"Compartir con otro grupo del jardín las conclusiones de un proyecto sobre igualdad."},
+  {edad:5, categoria:"Respetar la diversidad", titulo:"Elaboramos mensajes de respeto para el jardín", desc:"Colaborar en la elaboración de carteles simples que promuevan el respeto a la diversidad."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Cierro el año reconociendo mis derechos aprendidos", desc:"Participar de una síntesis grupal sobre los derechos conocidos durante el año."},
+  {edad:4, categoria:"Cuidar el cuerpo y la salud", titulo:"Reconozco que puedo cuidar mi cuerpo activamente", desc:"Practicar acciones concretas de autocuidado que puede realizar de forma independiente."},
+  {edad:5, categoria:"Ejercer nuestros derechos", titulo:"Reconozco que todos los niños tienen los mismos derechos", desc:"Reflexionar sobre la igualdad de derechos entre todos los niños y niñas, sin excepción."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>
