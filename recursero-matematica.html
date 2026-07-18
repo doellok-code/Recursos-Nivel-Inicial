@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Matemática</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Matemática · Recurso docente</span>
+    <h1>Recursero de <em>matemática</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> Matemática es área formal, con sus cuatro ejes (Número, Espacio, Geometría, Medida), solo en Sala de 3, 4 y 5. En Sala de 1 y 2 años no existe como área independiente en el Diseño Curricular: las propuestas de esas salas son exploración lógico-matemática informal, no contenidos curriculares del área.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Guardo los autos con los autos", desc:"Ordenar juguetes en cestos separados según el tipo de objeto.", tech:false},
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Grandes y chicos", desc:"Separar objetos grandes de objetos chicos en dos cestos distintos.", tech:false},
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Pelotas del mismo color", desc:"Juntar pelotas de un mismo color en un mismo cesto.", tech:false},
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Cubiertos de jugar y de comer", desc:"Separar los cubiertos de juego de los que se usan para comer.", tech:false},
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Animales de la granja y salvajes", desc:"Agrupar animalitos de juguete según dónde viven.", tech:false},
+  {edad:1, categoria:"Clasificación y agrupamiento", titulo:"Todas las tapas juntas", desc:"Guardar las tapas de frascos todas juntas en su lata.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"El vaso más grande", desc:"Elegir el vaso más grande entre dos opciones para tomar agua.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"Apilo de mayor a menor", desc:"Apilar cubos ordenándolos del más grande al más chico.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"Comparo mi zapato", desc:"Comparar el tamaño del propio zapato con el de un compañero.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"El osito más chiquito", desc:"Buscar el osito más pequeño entre tres opciones.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"Cajas que entran una en otra", desc:"Encajar cajas de distinto tamaño una dentro de otra.", tech:false},
+  {edad:1, categoria:"Tamaño y comparación", titulo:"¿Cuál pesa más?", desc:"Sostener dos pelotas y comparar cuál pesa más.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Adentro y afuera del túnel", desc:"Gatear entrando y saliendo de un túnel de tela.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Escondo y busco", desc:"Esconder un juguete detrás de la almohada y buscarlo.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Subo y bajo del banquito", desc:"Subir arriba de un banquito bajo y volver a bajar.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Adentro y afuera del aro", desc:"Pasar el cuerpo por adentro y por afuera de un aro.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Sigo el camino de cintas", desc:"Seguir un camino armado con cintas pegadas en el piso.", tech:false},
+  {edad:1, categoria:"Espacio y desplazamiento", titulo:"Cerca y lejos", desc:"Alcanzar un objeto que está cerca y otro que está lejos.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Un vaso por muñeco", desc:"Poner un vaso para cada muñeco sentado a la mesa.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Una cuchara por plato", desc:"Repartir una cuchara para cada plato en la mesa.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Un cubo para cada uno", desc:"Repartir un cubo a cada compañero de la ronda.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Un babero por percha", desc:"Colgar un babero en cada percha identificada.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Una pelota por agujero", desc:"Meter una pelota en cada agujero de una caja perforada.", tech:false},
+  {edad:1, categoria:"Correspondencia y cantidad", titulo:"Una galletita para cada uno", desc:"Repartir una galletita por niño en la ronda de merienda.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Aprieto y suena", desc:"Apretar un botón y observar que suena una música.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Apilo y tiro la torre", desc:"Apilar bloques, tirar la torre, y volver a apilar.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Abro y cierro la caja", desc:"Abrir y cerrar una caja con tapa varias veces.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Empujo y se mueve", desc:"Empujar un auto de juguete y observar que se desplaza.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Vacío y lleno el balde", desc:"Llenar y vaciar un balde con agua en la pileta baja.", tech:false},
+  {edad:1, categoria:"Secuencias y causa-efecto", titulo:"Enciendo y apago la luz", desc:"Encender y apagar una linterna repetidas veces.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Todos los rojos juntos", desc:"Separar objetos según su color, agrupando los del mismo color.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Cuadrados y redondos", desc:"Agrupar bloques de construcción según su forma.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Flota y no flota", desc:"Clasificar objetos en el agua según si flotan o se hunden.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Ropa de verano e invierno", desc:"Separar prendas según la estación a la que corresponden.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Frutas y verduras", desc:"Separar frutas y verduras de juguete en dos canastos.", tech:false},
+  {edad:2, categoria:"Clasificación con criterio", titulo:"Ruedan y no ruedan", desc:"Agrupar objetos según si ruedan o no al empujarlos.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Ordeno tres aros", desc:"Ordenar tres aros de mayor a menor tamaño.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Torre de más grande a más chico", desc:"Armar una torre de bloques ordenados por tamaño decreciente.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Ordeno lápices", desc:"Ordenar lápices de distinto tamaño de más largo a más corto.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Alto, más alto, el más alto", desc:"Comparar la altura de tres muñecos y ordenarlos.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Más lleno y más vacío", desc:"Ordenar frascos con agua de más lleno a más vacío.", tech:false},
+  {edad:2, categoria:"Seriación y tamaño", titulo:"Fila de autos por largo", desc:"Formar una fila de autos ordenados del más largo al más corto.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Recorrido con obstáculos", desc:"Seguir un recorrido simple sorteando obstáculos bajos.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Arriba, abajo, adentro, afuera", desc:"Ubicar un juguete según consignas de posición simples.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Mapa simple del patio", desc:"Armar un mapa con dibujos de los lugares del patio.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Describo dónde me escondí", desc:"Jugar a las escondidas y describir después dónde estaba.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Sigo las flechas", desc:"Caminar siguiendo flechas pegadas en el piso de la sala.", tech:false},
+  {edad:2, categoria:"Espacio y ubicación", titulo:"Derecha o izquierda de la puerta", desc:"Ubicar la propia mochila a la derecha o izquierda de una referencia.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Un lápiz por compañero", desc:"Repartir un lápiz para cada compañero de la mesa.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Cuento hasta tres", desc:"Contar hasta tres señalando objetos uno por uno.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Tantos autos como muñecos", desc:"Formar una colección de autos igual a la cantidad de muñecos.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Junto de a pares", desc:"Emparejar medias, guantes y zapatos de a dos.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Cuento los escalones", desc:"Contar en voz alta los escalones mientras se sube.", tech:false},
+  {edad:2, categoria:"Cantidad y correspondencia", titulo:"Reparto galletitas", desc:"Repartir una, dos, tres galletitas contando para cada uno.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"Encastro por forma", desc:"Encastrar figuras en un tablero según su forma.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"Objetos redondos de la sala", desc:"Buscar y juntar objetos de forma redonda en la sala.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"Cuáles ruedan y cuáles no", desc:"Explorar qué bloques ruedan y cuáles se pueden apilar.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"Círculos con tiza", desc:"Dibujar círculos grandes en el piso del patio con tiza.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"Casa con cuadrados y triángulos", desc:"Armar una casa con bloques cuadrados y triangulares.", tech:false},
+  {edad:2, categoria:"Formas y cuerpos", titulo:"¿Tiene puntas o es redondito?", desc:"Explorar objetos por el tacto y describir si tienen puntas.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Recitado en ronda", desc:"Recitar la serie numérica en juegos de ronda y persecución.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Cuento hasta cinco", desc:"Contar objetos hasta cinco, tocando cada uno al nombrarlo.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"¿Dónde hay más?", desc:"Comparar dos colecciones y determinar dónde hay más o menos.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Oca con dado de puntos", desc:"Jugar a un recorrido tipo oca con dado de puntos hasta tres.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Reparto uno a uno", desc:"Repartir objetos de a uno entre los compañeros de la mesa.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Números del calendario", desc:"Buscar números conocidos en el calendario y el cartel de asistencia.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"Tapitas según el dado", desc:"Juntar tantas tapitas como puntos indica el dado.", tech:false},
+  {edad:3, categoria:"Número y Sistema de Numeración", titulo:"¿Cuántos faltaron hoy?", desc:"Contar cuántos compañeros faltaron usando el cartel de asistencia.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Cerca, lejos, adentro", desc:"Describir con palabras dónde está un objeto escondido en la sala.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Recorrido con obstáculos", desc:"Armar un recorrido y describirlo oralmente después de hacerlo.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"El camino hasta encontrarlo", desc:"Explicar el camino recorrido para encontrar a un compañero escondido.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Maqueta de la sala", desc:"Ubicar objetos pequeños en una maqueta simple de la sala.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Caminá derecho y doblá", desc:"Seguir instrucciones orales simples para llegar a un lugar.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Dibujo el camino a casa", desc:"Dibujar con ayuda el camino de la casa al jardín.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Búsqueda del tesoro", desc:"Seguir pistas de ubicación para encontrar un tesoro escondido.", tech:false},
+  {edad:3, categoria:"Espacio", titulo:"Indico sin señalar", desc:"Comunicar a un compañero dónde dejar un objeto sin usar la mano.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Cuáles ruedan", desc:"Explorar cuerpos geométricos y clasificar cuáles ruedan y cuáles no.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Figuras con el cuerpo", desc:"Armar figuras geométricas entre varios usando el propio cuerpo.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Busco formas en la sala", desc:"Encontrar objetos con forma de círculo, cuadrado y triángulo.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Copio con palitos", desc:"Copiar una figura simple usando palitos o fósforos.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Rompecabezas de formas", desc:"Armar un rompecabezas grande de figuras geométricas.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"¿En qué se parecen?", desc:"Comparar dos figuras geométricas señalando semejanzas y diferencias.", tech:false},
+  {edad:3, categoria:"Geometría", titulo:"Torre con distintas formas", desc:"Construir una torre combinando bloques de distintas formas.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"Más largo, más corto", desc:"Comparar dos objetos y decir cuál es más largo o más corto.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"Mido con mis pasos", desc:"Medir la distancia entre dos paredes contando los propios pasos.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"¿Cuál tiene más agua?", desc:"Comparar dos recipientes y decir cuál tiene más agua.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"Balanza casera", desc:"Comparar el peso de dos objetos con una balanza construida en sala.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"Reloj de arena", desc:"Observar un reloj de arena y decir si pasó mucho o poco tiempo.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"Antes y después", desc:"Armar la secuencia del día con carteles de 'antes' y 'después'.", tech:false},
+  {edad:3, categoria:"Medida", titulo:"¿Cuál planta creció más?", desc:"Comparar el crecimiento de dos plantas a lo largo de la semana.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Cuento hasta diez", desc:"Contar hasta diez usando objetos concretos, uno por uno.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Más, menos o igual", desc:"Comparar dos colecciones de hasta ocho objetos.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Cartas españolas", desc:"Comparar cuál número es mayor jugando con cartas españolas.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Escribo números conocidos", desc:"Copiar números conocidos a partir de un modelo.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Lotería hasta diez", desc:"Jugar a la lotería de números hasta el diez.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Problema simple de suma", desc:"Resolver con material concreto: tengo tres y me dan dos.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Días para el evento", desc:"Usar el calendario para contar cuántos días faltan para un evento.", tech:false},
+  {edad:4, categoria:"Número y Sistema de Numeración", titulo:"Colección según el dado", desc:"Formar una colección igual a la cantidad que marca un dado numérico.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Dibujo mi recorrido", desc:"Representar en un dibujo el camino desde la puerta hasta la mesa.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Plano simple del jardín", desc:"Ubicar las salas del jardín en un plano simple.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Indicaciones sin ver", desc:"Dar instrucciones orales a un compañero que no ve el camino.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Consigna de dos pasos", desc:"Ubicar un objeto siguiendo dos consignas espaciales encadenadas.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Maqueta con cajas", desc:"Armar una maqueta simple de la sala usando cajas.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Tesoro con plano dibujado", desc:"Buscar un tesoro siguiendo un plano dibujado por la docente.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Cómo llegar, con dibujos", desc:"Comunicar por escrito, con dibujos, cómo llegar a un lugar.", tech:false},
+  {edad:4, categoria:"Espacio", titulo:"Comparo mi plano", desc:"Comparar la propia representación del espacio con la de un compañero.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Lados rectos o curvos", desc:"Distinguir figuras de lados rectos de las de lados curvos.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Copio en el geoplano", desc:"Copiar una figura en el geoplano o en papel punteado.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Cuerpos con material reciclado", desc:"Construir cuerpos geométricos con material reciclado.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Rompecabezas más complejo", desc:"Armar un rompecabezas de figuras con más piezas.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Caras planas o no", desc:"Comparar cuerpos geométricos según si tienen caras planas.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Figura simétrica con papel", desc:"Diseñar una figura simétrica doblando papel.", tech:false},
+  {edad:4, categoria:"Geometría", titulo:"Formas en construcciones reales", desc:"Buscar figuras geométricas en edificios y puentes reales.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Mido con unidades no convencionales", desc:"Medir objetos usando lápices, pasos o hilos como unidad.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Ordeno por longitud", desc:"Comparar tres objetos y ordenarlos según su longitud.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Cronómetro de arena", desc:"Usar un reloj de arena para cronometrar una actividad grupal.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Línea de tiempo de la semana", desc:"Armar una línea de tiempo simple con los días de la semana.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Balanza de platillos", desc:"Comparar el peso de distintos objetos con una balanza de platillos.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Capacidad con un vaso", desc:"Medir la capacidad de dos recipientes usando un vaso como unidad.", tech:false},
+  {edad:4, categoria:"Medida", titulo:"Registro de crecimiento", desc:"Registrar en un cuadro cuánto creció una planta durante el mes.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Cuento hasta veinte", desc:"Contar hasta veinte o más apoyándose en la banda numérica.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Problema de suma", desc:"Resolver un problema de suma simple con material concreto.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Problema de resta", desc:"Resolver: tenía cinco y regalé dos, ¿cuántos quedan?", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Escribo números", desc:"Escribir números de manera convencional, copiando o de memoria.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Ordeno en la banda numérica", desc:"Comparar y ordenar números usando la banda numérica del aula.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Guerra de cartas", desc:"Comparar cuál número es mayor jugando a la guerra de cartas.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Reparto equitativo", desc:"Resolver un problema de reparto igualitario entre varios compañeros.", tech:false},
+  {edad:5, categoria:"Número y Sistema de Numeración", titulo:"Dinero de juguete", desc:"Representar cantidades simples usando dinero de juguete.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Leo un plano", desc:"Leer un plano simple para encontrar un objeto escondido.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Recorrido con referencias", desc:"Representar un recorrido real del jardín con puntos de referencia.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Instrucciones de varios pasos", desc:"Dar y seguir instrucciones de más de dos pasos para desplazarse.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Coordenadas simples", desc:"Ubicar objetos en una grilla usando coordenadas simples.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Comparo recorridos posibles", desc:"Comparar distintos caminos posibles para llegar a un mismo lugar.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Plano simple de mi casa", desc:"Diseñar con ayuda un plano simple de la propia casa.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Mapa del barrio", desc:"Señalar lugares conocidos en un mapa simple del barrio.", tech:false},
+  {edad:5, categoria:"Espacio", titulo:"Explico cómo llegar", desc:"Explicar oralmente y por escrito cómo llegar de un punto a otro.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Clasifico cuerpos geométricos", desc:"Clasificar cuerpos según sus caras, vértices y aristas.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Simetría con espejo", desc:"Construir figuras simétricas usando un espejo o papel doblado.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Copio figuras complejas", desc:"Copiar figuras complejas en el geoplano.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Polígonos y curvas", desc:"Diferenciar polígonos de figuras con lados curvos.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Mosaico con figuras", desc:"Diseñar un mosaico combinando distintas figuras geométricas.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Desarrollo plano de un cuerpo", desc:"Comparar una caja armada con su desarrollo plano desplegado.", tech:false},
+  {edad:5, categoria:"Geometría", titulo:"Tangram simple", desc:"Resolver un rompecabezas tipo tangram con pocas piezas.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Mido con regla", desc:"Medir objetos con instrumentos convencionales simples.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Ordeno medidas registradas", desc:"Comparar y ordenar medidas registradas en una tabla.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Leo la hora aproximada", desc:"Leer la hora aproximada en un reloj analógico simple.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Días para el evento", desc:"Usar el calendario para calcular cuántos días faltan para un evento.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Peso y registro", desc:"Pesar objetos con una balanza y registrar los resultados obtenidos.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Capacidad convencional", desc:"Comparar capacidades usando unidades convencionales como el litro.", tech:false},
+  {edad:5, categoria:"Medida", titulo:"Línea de tiempo del año", desc:"Armar una línea de tiempo del año con meses y estaciones.", tech:false},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>
