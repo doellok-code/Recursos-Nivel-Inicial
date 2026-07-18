@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Juego</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Juego · Recurso docente</span>
+    <h1>Recursero de <em>juego</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> A diferencia de Matemática, Ambiente y Lenguajes Artísticos, Juego se incorporó en 2022 como área transversal a todo el Nivel Inicial: se aplica en las cinco salas, no solo de 3 a 5. Las categorías se complejizan progresivamente: juegos de crianza (propios del vínculo adulto-bebé), juego motor, juego de construcción, juego dramático y simbólico, y juegos con reglas.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Juegos de crianza", titulo:"Cucú, ¿dónde está?", desc:"Jugar a taparse y descubrirse la cara sosteniendo la expectativa del bebé."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Aserrín aserrán", desc:"Jugar el clásico juego de falda con movimiento rítmico compartido."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Upa y vuelo", desc:"Sostener al bebé en upa y simular un vuelo suave con sonidos."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"A caballito", desc:"Jugar a caballito sobre las piernas del adulto con una canción."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Palmas palmitas", desc:"Jugar la rima tradicional tomando las manos del bebé."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Persecución lenta", desc:"Perseguir suavemente al bebé que gatea, generando expectativa y risa."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Ruedo con la colchoneta", desc:"Explorar el rodar del propio cuerpo sobre una colchoneta blanda."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Gateo tras el objeto", desc:"Gatear persiguiendo un objeto que rueda despacio."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Me paro y me sostengo", desc:"Jugar a pararse sostenido de un mueble bajo y seguro."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Juego con telas al viento", desc:"Mover el cuerpo mientras se agita una tela liviana en el aire."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Subo y bajo del almohadón", desc:"Jugar a subir y bajar de un almohadón grueso repetidamente."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Cesto de los tesoros", desc:"Explorar libremente un cesto con objetos cotidianos de distintos materiales."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Juego con frascos sonoros", desc:"Explorar el sonido de frascos sellados con distintos materiales adentro."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Apilar y tirar", desc:"Jugar a apilar cubos y volver a tirarlos repetidas veces."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Meto y saco de la caja", desc:"Jugar a meter y sacar objetos livianos de una caja abierta."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Rodar la pelota", desc:"Explorar el juego de hacer rodar una pelota blanda de un lado a otro."},
+  {edad:1, categoria:"Juego social temprano", titulo:"Juego de imitación de gestos", desc:"Imitar gestos simples del adulto como aplaudir o decir chau."},
+  {edad:1, categoria:"Juego social temprano", titulo:"Sonrisas compartidas", desc:"Sostener un intercambio de miradas y sonrisas como juego social."},
+  {edad:1, categoria:"Juego social temprano", titulo:"El juego del espejo", desc:"Hacer muecas frente a un espejo junto al adulto."},
+  {edad:1, categoria:"Juego social temprano", titulo:"Paso la pelota", desc:"Jugar a pasarse una pelota blanda de mano en mano con el adulto."},
+  {edad:1, categoria:"Juego social temprano", titulo:"Juego de las cosquillas", desc:"Compartir un juego de cosquillas suaves con pausas de espera."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Nana con mecida", desc:"Mecer suavemente al bebé cantando una melodía calma."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"Escondo el juguete y aparece", desc:"Esconder parcialmente un juguete y hacerlo aparecer con sorpresa."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Camino sostenido de las manos", desc:"Practicar los primeros pasos sostenido de las manos del adulto."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Juego con pelotas de distinto tamaño", desc:"Explorar el movimiento del cuerpo empujando pelotas de distinto tamaño."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Juego con anillos apilables", desc:"Explorar el encastre simple de anillos en un cono central."},
+  {edad:1, categoria:"Juego de exploración de objetos", titulo:"Libro de tela como juguete", desc:"Explorar un libro de tela manipulándolo libremente como objeto de juego."},
+  {edad:1, categoria:"Juego social temprano", titulo:"Juego de dar y recibir", desc:"Practicar el gesto de dar un objeto al adulto y recibirlo de vuelta."},
+  {edad:1, categoria:"Juegos de crianza", titulo:"A upa girando despacio", desc:"Girar suavemente en upa mientras se canta una canción conocida."},
+  {edad:1, categoria:"Juego corporal y motor", titulo:"Juego con el túnel de tela", desc:"Gatear entrando y saliendo de un túnel de tela blando."},
+  {edad:2, categoria:"Juegos de crianza", titulo:"Ronda de las manos", desc:"Jugar en ronda tomados de las manos con una canción tradicional."},
+  {edad:2, categoria:"Juegos de crianza", titulo:"A las escondidas simple", desc:"Jugar a esconderse detrás de una manta y ser encontrado."},
+  {edad:2, categoria:"Juegos de crianza", titulo:"Caballito con velocidad", desc:"Variar la velocidad del caballito de falda según la canción."},
+  {edad:2, categoria:"Juegos de crianza", titulo:"El lobo está", desc:"Jugar una versión simple del juego tradicional 'el lobo está'."},
+  {edad:2, categoria:"Juego motor", titulo:"Circuito de obstáculos bajos", desc:"Recorrer un circuito simple sorteando obstáculos bajos y seguros."},
+  {edad:2, categoria:"Juego motor", titulo:"Saltar como conejos", desc:"Jugar a saltar imitando el movimiento de distintos animales."},
+  {edad:2, categoria:"Juego motor", titulo:"Carrera de embolsados simple", desc:"Participar de una versión adaptada y segura de la carrera de embolsados."},
+  {edad:2, categoria:"Juego motor", titulo:"Juego de las estatuas", desc:"Moverse libremente y quedar quieto cuando para la música."},
+  {edad:2, categoria:"Juego motor", titulo:"Persecución con red", desc:"Jugar a la mancha simple, siendo perseguido por el adulto o un par."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Torres con bloques grandes", desc:"Construir torres con bloques de madera o goma espuma."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Encastre de piezas grandes", desc:"Jugar con piezas de encastre simples de tamaño grande."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Construyo un camino", desc:"Armar un camino con bloques para hacer rodar autos de juguete."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Casita con cajas", desc:"Construir una casita simple uniendo cajas de cartón grandes."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Doy de comer a la muñeca", desc:"Jugar a alimentar a una muñeca con utensilios de juguete."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Hablo por teléfono", desc:"Jugar a simular una llamada telefónica con un teléfono de juguete."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Cocino en la cocinita", desc:"Jugar libremente en el rincón de dramatizaciones con la cocinita."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Manejo el auto de juguete", desc:"Jugar a simular que se maneja un auto, con sonidos y gestos."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Duermo a mi muñeco", desc:"Jugar a arropar y hacer dormir a un muñeco con una canción."},
+  {edad:2, categoria:"Juego social con pares", titulo:"Nos pasamos la pelota", desc:"Jugar a pasarse la pelota entre dos o tres compañeros en ronda."},
+  {edad:2, categoria:"Juego social con pares", titulo:"Construimos juntos", desc:"Compartir con un compañero la construcción de una torre de bloques."},
+  {edad:2, categoria:"Juego social con pares", titulo:"Juego de las sillas simple", desc:"Participar de una versión simple y sin competencia del juego de las sillas."},
+  {edad:2, categoria:"Juegos de crianza", titulo:"Debajo del puente", desc:"Jugar a pasar por debajo de un puente armado con los brazos del adulto."},
+  {edad:2, categoria:"Juego motor", titulo:"Juego con aros en el piso", desc:"Saltar y pisar dentro de aros distribuidos en el piso."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Rompecabezas de piezas grandes", desc:"Armar un rompecabezas simple de pocas piezas grandes."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Soy doctor por un rato", desc:"Jugar a curar a un muñeco con instrumentos médicos de juguete."},
+  {edad:2, categoria:"Juego social con pares", titulo:"Ronda cantada entre todos", desc:"Participar de una ronda cantada tomados de las manos con el grupo."},
+  {edad:2, categoria:"Juego motor", titulo:"Bailamos y paramos", desc:"Jugar a bailar libremente y detenerse ante una señal sonora."},
+  {edad:2, categoria:"Juego de construcción", titulo:"Armamos un tren con cajas", desc:"Construir un tren simple uniendo varias cajas en fila."},
+  {edad:2, categoria:"Juego dramático y simbólico", titulo:"Juego a ser mamá o papá", desc:"Jugar roles familiares simples con muñecos y objetos cotidianos."},
+  {edad:2, categoria:"Juego social con pares", titulo:"Escondida grupal simple", desc:"Jugar a las escondidas en grupo con ayuda del adulto para buscar."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Armamos el rincón de la casita", desc:"Organizar y jugar libremente en el rincón de dramatizaciones familiares."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Somos verduleros", desc:"Jugar a simular un almacén o verdulería con roles definidos."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Jugamos a los médicos", desc:"Simular una consulta médica con roles de paciente y doctor."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Somos una familia de animales", desc:"Jugar roles de una familia de animales imaginaria en grupo."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Viajamos en el colectivo", desc:"Simular un viaje en colectivo con roles de chofer y pasajeros."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Construimos una ciudad", desc:"Construir en grupo una ciudad simple con bloques y autos."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Armamos un zoológico", desc:"Construir un zoológico con bloques y animales de juguete."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Torre más alta del grupo", desc:"Colaborar para construir la torre más alta posible entre todos."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Puente para los autos", desc:"Diseñar y construir un puente simple para que pasen autos de juguete."},
+  {edad:3, categoria:"Juego motor", titulo:"Circuito con distintos desafíos", desc:"Recorrer un circuito con saltos, gateos y equilibrio combinados."},
+  {edad:3, categoria:"Juego motor", titulo:"La mancha congelada", desc:"Jugar a la mancha donde el tocado queda congelado hasta ser liberado."},
+  {edad:3, categoria:"Juego motor", titulo:"Juego de las sillas musicales", desc:"Participar del juego tradicional de las sillas con música."},
+  {edad:3, categoria:"Juego motor", titulo:"Carrera de postas simple", desc:"Participar de una carrera de postas simple en equipos pequeños."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Dominó de imágenes", desc:"Jugar con un dominó simple de imágenes conocidas."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Memoria de a dos", desc:"Jugar al juego de memoria con pocas parejas de cartas."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Juego de la oca simple", desc:"Jugar un recorrido tipo oca con dado de puntos hasta tres."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Veo veo", desc:"Jugar al clásico veo veo con objetos visibles en la sala."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Simón dice", desc:"Jugar a Simón dice siguiendo consignas corporales simples."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Jugamos a la peluquería", desc:"Simular una peluquería con roles de peluquero y cliente."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Construimos con material reciclado", desc:"Construir libremente con cajas, tubos y envases reciclados."},
+  {edad:3, categoria:"Juego motor", titulo:"Saltamos la soga en grupo", desc:"Jugar con una soga larga girada por dos adultos o niños mayores."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Loteria con imágenes", desc:"Jugar a la lotería con cartones de imágenes conocidas."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Somos bomberos", desc:"Simular una situación de rescate con roles de bomberos."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Armamos un barco", desc:"Construir un barco simple con bloques y otros materiales de sala."},
+  {edad:3, categoria:"Juego motor", titulo:"Juego del túnel humano", desc:"Pasar en fila por un túnel formado con los cuerpos de los compañeros."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Adivina quién", desc:"Jugar a adivinar un personaje a partir de pistas simples."},
+  {edad:3, categoria:"Juego dramático y simbólico", titulo:"Jugamos al circo", desc:"Simular una función de circo con distintos roles artísticos."},
+  {edad:3, categoria:"Juego de construcción", titulo:"Casa para los tres chanchitos", desc:"Construir tres casas distintas inspiradas en un cuento conocido."},
+  {edad:3, categoria:"Juego motor", titulo:"Juego de las estatuas con consigna", desc:"Bailar y quedar en una postura determinada al parar la música."},
+  {edad:3, categoria:"Juegos con reglas simples", titulo:"Cartas de figuras simples", desc:"Jugar con un mazo simple comparando figuras o cantidades."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Organizamos un restaurante", desc:"Simular un restaurante con roles de mozo, cocinero y clientes."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Somos exploradores", desc:"Jugar a una expedición imaginaria con roles y objetivos definidos."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Jugamos a la escuela", desc:"Simular roles de docente y alumnos en el juego dramático."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Somos astronautas", desc:"Jugar a un viaje espacial imaginario con escenografía simple."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Armamos una tienda de ropa", desc:"Simular una tienda con roles de vendedor y comprador."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Construimos un parque de diversiones", desc:"Diseñar y construir un parque de juegos con bloques y materiales variados."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Ciudad con reglas de tránsito", desc:"Construir una ciudad e incorporar señales de tránsito simples."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Competencia de estructuras", desc:"Comparar entre grupos qué estructura resulta más estable."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Construimos con planos simples", desc:"Seguir un plano simple dibujado para construir una estructura."},
+  {edad:4, categoria:"Juego motor", titulo:"Circuito con tiempos", desc:"Recorrer un circuito motor y comparar el tiempo que lleva completarlo."},
+  {edad:4, categoria:"Juego motor", titulo:"Juegos tradicionales en equipos", desc:"Participar de juegos tradicionales organizados por equipos pequeños."},
+  {edad:4, categoria:"Juego motor", titulo:"La mancha con distintas variantes", desc:"Jugar variantes de la mancha: elástica, veneno, cadena."},
+  {edad:4, categoria:"Juego motor", titulo:"Postas con consignas motrices", desc:"Participar de postas que combinan saltar, gatear y correr."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Juego de la oca completo", desc:"Jugar el recorrido completo de la oca con reglas de casillas especiales."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Dominó numérico simple", desc:"Jugar un dominó que combina números y cantidades."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Ta-te-ti simple", desc:"Jugar al ta-te-ti en parejas comprendiendo el objetivo del juego."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Batalla naval simple", desc:"Jugar una versión simplificada de batalla naval con grilla grande."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Juego de cartas: la guerra", desc:"Jugar a la guerra comparando cuál carta es mayor."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Somos periodistas de sala", desc:"Simular un noticiero de sala entrevistando a compañeros."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Maqueta del barrio", desc:"Construir en grupo una maqueta simple del barrio con bloques."},
+  {edad:4, categoria:"Juego motor", titulo:"Juego de encestar puntería", desc:"Jugar a encestar pelotas en distintos objetivos, sumando puntos."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Adivinanzas con turnos", desc:"Jugar a las adivinanzas respetando el turno de cada participante."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Somos veterinarios", desc:"Simular una clínica veterinaria con roles definidos."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Construimos un puente colgante", desc:"Diseñar un puente que sostenga peso usando materiales simples."},
+  {edad:4, categoria:"Juego motor", titulo:"Carrera de relevos con objetos", desc:"Participar de relevos que incluyen transportar un objeto sin caerlo."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Bingo de números", desc:"Jugar al bingo simple reconociendo números conocidos."},
+  {edad:4, categoria:"Juego dramático y simbólico", titulo:"Armamos una radio de sala", desc:"Simular un programa de radio con roles de conductor e invitado."},
+  {edad:4, categoria:"Juego de construcción", titulo:"Torres resistentes al viento", desc:"Probar qué construcción resiste mejor el viento de un ventilador."},
+  {edad:4, categoria:"Juego motor", titulo:"Juego de las sillas con eliminación por equipos", desc:"Jugar una versión grupal y cooperativa del juego de las sillas."},
+  {edad:4, categoria:"Juegos con reglas", titulo:"Twister simple", desc:"Jugar una versión adaptada del juego de posturas corporales con consignas."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Escribimos y jugamos nuestra obra", desc:"Crear una historia y representarla en el juego dramático grupal."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Somos reporteros de un evento", desc:"Simular la cobertura periodística de un evento inventado por el grupo."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Armamos un juicio simple", desc:"Simular una situación de resolución de conflicto con roles definidos."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Somos científicos", desc:"Jugar a un laboratorio imaginario con experimentos simulados."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Organizamos una fiesta de disfraces", desc:"Planificar y jugar una fiesta temática con roles y vestuario propio."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Diseñamos y construimos un juego propio", desc:"Crear un juego de mesa simple diseñado por el grupo."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Maqueta con planos propios", desc:"Dibujar un plano propio y construir la estructura a partir de él."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Desafío de construcción con límite de piezas", desc:"Construir la estructura más alta posible con una cantidad limitada de piezas."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Construimos un sistema de poleas simple", desc:"Explorar la construcción de un mecanismo simple con poleas."},
+  {edad:5, categoria:"Juego motor", titulo:"Torneo de juegos tradicionales", desc:"Organizar un torneo simple de juegos tradicionales entre equipos."},
+  {edad:5, categoria:"Juego motor", titulo:"Circuito de habilidades combinadas", desc:"Diseñar entre todos un circuito motor con distintas estaciones."},
+  {edad:5, categoria:"Juego motor", titulo:"Juego cooperativo sin eliminados", desc:"Participar de un juego donde el objetivo es colaborar, sin eliminación."},
+  {edad:5, categoria:"Juego motor", titulo:"Postas con estrategia grupal", desc:"Planificar en equipo la estrategia antes de una carrera de postas."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Diseñamos las reglas de un juego nuevo", desc:"Inventar en grupo las reglas de un juego propio y ponerlo a prueba."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Juego de estrategia simple", desc:"Jugar un juego de mesa que requiere planificar la jugada siguiente."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Torneo de memoria", desc:"Organizar un torneo simple del juego de memoria por parejas."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Escondite con pistas", desc:"Jugar a las escondidas incorporando pistas escritas o dibujadas."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Ajedrez simplificado", desc:"Explorar movimientos simples de un ajedrez adaptado a la edad."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Somos guías de museo", desc:"Simular una visita guiada explicando producciones propias como si fueran obras."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Ciudad sostenible", desc:"Construir una ciudad incorporando ideas de cuidado ambiental discutidas en grupo."},
+  {edad:5, categoria:"Juego motor", titulo:"Gymkana con desafíos grupales", desc:"Participar de una gymkana con pruebas que requieren trabajo en equipo."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Debate con reglas de turno", desc:"Jugar a debatir un tema simple respetando reglas de turno de palabra."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Recreamos una noticia real", desc:"Representar de forma simple una noticia real conversada en la ronda."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Construimos con consigna de reciclaje", desc:"Diseñar una estructura utilizando exclusivamente materiales reciclados."},
+  {edad:5, categoria:"Juego motor", titulo:"Carrera de orientación simple", desc:"Seguir pistas simples en el patio para llegar a un objetivo final."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Juego de roles con normas acordadas", desc:"Jugar un juego dramático acordando previamente las reglas entre todos."},
+  {edad:5, categoria:"Juego dramático y simbólico", titulo:"Presentamos una obra a otras salas", desc:"Representar una producción dramática propia ante otro grupo del jardín."},
+  {edad:5, categoria:"Juego de construcción", titulo:"Diseñamos un espacio de juego ideal", desc:"Proponer y construir a escala reducida un espacio de juego soñado."},
+  {edad:5, categoria:"Juego motor", titulo:"Juegos del mundo", desc:"Investigar y jugar un juego motor tradicional de otro país."},
+  {edad:5, categoria:"Juegos con reglas", titulo:"Torneo final de juegos de sala", desc:"Organizar un cierre de año con un torneo de los juegos favoritos del grupo."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>

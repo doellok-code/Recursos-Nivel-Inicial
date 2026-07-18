@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Formación Personal y Social</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Formación Personal y Social · Recurso docente</span>
+    <h1>Recursero de <em>formación personal y social</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> Con la actualización 2023, esta área pasó a llamarse Formación personal y social (antes incluía "y Moral"). Es área formal, con cuatro bloques (Identidad y autonomía · Convivencia y vínculos con otros · Cuidado de sí y de los otros · Normas, acuerdos y resolución de conflictos), solo en Sala de 3, 4 y 5. En Sala de 1 y 2 las propuestas se centran en la constitución subjetiva temprana: vínculo de apego, identidad y autonomía progresiva.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Vínculo de apego", titulo:"Rutina de recibimiento personalizado", desc:"Recibir a cada bebé con un saludo y contacto corporal propio y sostenido."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Momento de upa individual", desc:"Sostener un momento diario de upa uno a uno con cada bebé."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Hablo mientras lo cuido", desc:"Narrar en voz alta cada gesto de cuidado durante el cambiado."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Reconozco sus señales", desc:"Responder con sensibilidad al llanto o gesto de malestar del bebé."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Objeto transicional propio", desc:"Permitir que cada bebé tenga a mano su objeto de apego personal."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Me miro en el espejo", desc:"Explorar el propio reflejo en un espejo bajo de sala."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Reconozco mi nombre en la percha", desc:"Asociar la propia foto y nombre con la percha o casillero personal."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Escucho mi nombre", desc:"Ser llamado por su nombre en distintos momentos de la rutina."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Toco mi cuerpo y el del otro con cuidado", desc:"Explorar con cuidado el propio cuerpo y el contacto suave con un par."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Intento tomar la cuchara", desc:"Sostener la cuchara propia durante la comida, con ayuda disponible."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Elijo entre dos objetos", desc:"Elegir entre dos juguetes ofrecidos, respetando su decisión."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Colaboro al vestirme", desc:"Participar activamente estirando el brazo o la pierna al vestirse."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Intento tomar el vaso solo", desc:"Sostener el propio vaso con ayuda disponible durante la merienda."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Miro y toco a un compañero con cuidado", desc:"Explorar el contacto suave y cuidadoso con otro bebé cercano."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Comparto el espacio de juego", desc:"Compartir el mismo espacio de juego con otro bebé sin conflicto forzado."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Espero mi turno en brazos", desc:"Esperar un momento breve mientras el adulto atiende a otro bebé."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Canción de despedida", desc:"Sostener una rutina de despedida con canción al retirarse la familia."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Fotos propias en la sala", desc:"Observar fotos propias colocadas a su altura en la sala."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Señalo lo que quiero", desc:"Comunicar mediante gesto o señalamiento lo que desea o necesita."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Juego social breve con otro bebé", desc:"Compartir un juego breve de dar y recibir con otro bebé."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Consuelo ante el malestar", desc:"Recibir consuelo corporal y verbal sostenido ante el llanto."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Reconozco a los adultos de la sala", desc:"Reconocer con la mirada a las docentes que lo cuidan habitualmente."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Ayudo a guardar mi chupete", desc:"Participar del gesto de guardar el propio chupete en su lugar."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Ronda de upa grupal", desc:"Compartir un momento de canción grupal sostenido en upa por distintos adultos."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Rutina estable de la siesta", desc:"Sostener una rutina de siesta predecible que brinde seguridad emocional."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Mi lugar en la sala", desc:"Reconocer un espacio propio identificado dentro de la sala."},
+  {edad:1, categoria:"Autonomía progresiva", titulo:"Intento sacarme la media", desc:"Intentar sacarse una prenda simple como la media, con ayuda disponible."},
+  {edad:1, categoria:"Convivencia con otros bebés", titulo:"Observo a otro bebé jugar", desc:"Observar con interés el juego de otro bebé antes de acercarse."},
+  {edad:1, categoria:"Vínculo de apego", titulo:"Presencia sostenida en momentos difíciles", desc:"Recibir acompañamiento cercano del adulto en momentos de adaptación."},
+  {edad:1, categoria:"Identidad y reconocimiento propio", titulo:"Celebramos mi cumpleaños", desc:"Sostener un ritual simple y afectivo para celebrar el cumpleaños del bebé."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Reconozco mis pertenencias", desc:"Identificar la propia mochila y percha entre las del grupo."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Elijo mi actividad", desc:"Elegir entre dos propuestas de juego ofrecidas por la docente."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Me visto con ayuda mínima", desc:"Participar activamente en vestirse, recibiendo ayuda solo cuando la pide."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Me lavo las manos con ayuda", desc:"Participar del lavado de manos con supervisión y ayuda mínima."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Cuento algo de mi casa", desc:"Compartir oralmente una novedad breve de su vida cotidiana."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Juego al lado de un compañero", desc:"Compartir el espacio de juego cerca de un compañero, en paralelo."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Comparto un juguete", desc:"Practicar el gesto de compartir un juguete con acompañamiento del adulto."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Saludo al llegar y al irme", desc:"Practicar el saludo de llegada y despedida con compañeros y docentes."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Espero mi turno en la fila", desc:"Esperar el turno para lavarse las manos o pasar por un espacio."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Juego breve con un compañero", desc:"Compartir un juego simple de a dos con intercambio de objetos."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Pido ayuda cuando la necesito", desc:"Practicar el gesto de pedir ayuda al adulto ante una dificultad."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Cuido un objeto de la sala", desc:"Participar del cuidado simple de un juguete o material compartido."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Consuelo a un compañero que llora", desc:"Acompañar con un gesto simple a un compañero que está triste."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco cuando algo me lastima", desc:"Comunicar con palabras o gestos simples una molestia física."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Guardamos los juguetes juntos", desc:"Participar de la rutina de ordenar los juguetes al finalizar el juego."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Espero mi turno para hablar", desc:"Practicar la espera del turno de palabra en la ronda."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Sigo una consigna simple de grupo", desc:"Seguir una consigna simple compartida con todo el grupo."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Reconozco el límite de un no", desc:"Aceptar un límite simple puesto por el adulto ante una situación de riesgo."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Reconozco mis emociones básicas", desc:"Nombrar con ayuda si está contento, triste o enojado."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Jugamos en pequeño grupo", desc:"Participar de un juego simple junto a dos o tres compañeros."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Cuido las plantas de la sala", desc:"Participar del riego simple de una planta como gesto de cuidado."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Acordamos cómo usar un juguete", desc:"Participar de un acuerdo simple sobre cómo compartir un juguete popular."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Reconozco mi imagen en fotos", desc:"Identificar la propia imagen entre fotos del grupo."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Ayudo a un compañero nuevo", desc:"Acompañar con un gesto simple a un compañero que recién llega."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Uso el pañuelo para mi nariz", desc:"Practicar el gesto de higiene simple con ayuda del adulto."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Respeto el espacio del otro", desc:"Reconocer y respetar el espacio de juego de un compañero."},
+  {edad:2, categoria:"Identidad y autonomía", titulo:"Cuento lo que me gusta", desc:"Compartir con el grupo un gusto o preferencia personal simple."},
+  {edad:2, categoria:"Convivencia y vínculos con otros", titulo:"Celebramos juntos un logro", desc:"Participar de un festejo grupal simple ante el logro de un compañero."},
+  {edad:2, categoria:"Cuidado de sí y de los otros", titulo:"Identifico objetos peligrosos", desc:"Reconocer con ayuda qué objetos no debe tocar por seguridad."},
+  {edad:2, categoria:"Normas y acuerdos simples", titulo:"Participo de la ronda diaria", desc:"Sostener la participación en la rutina diaria de la ronda grupal."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco mis datos personales", desc:"Reconocer y comunicar el propio nombre completo y otros datos simples."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Elijo y decido en el juego", desc:"Tomar decisiones simples sobre qué y con quién jugar."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Me visto y desvisto solo", desc:"Vestirse y desvestirse de forma autónoma con prendas simples."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco mi familia y su composición", desc:"Reconocer y compartir con el grupo la propia composición familiar."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Expreso mis gustos y preferencias", desc:"Comunicar con claridad gustos y preferencias personales al grupo."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Juego cooperativo con reglas simples", desc:"Participar de un juego grupal que requiere cooperación básica."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Escucho al compañero que habla", desc:"Practicar la escucha atenta cuando un compañero comparte algo."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Resuelvo un conflicto con ayuda", desc:"Buscar con ayuda del adulto una solución a un conflicto simple con un par."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Incluyo a un compañero en el juego", desc:"Practicar el gesto de invitar a un compañero a sumarse al juego."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco hábitos de cuidado personal", desc:"Practicar hábitos simples de higiene y cuidado del propio cuerpo."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Cuido los materiales compartidos", desc:"Participar del cuidado de los materiales de uso común en la sala."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Identifico situaciones de riesgo simples", desc:"Reconocer situaciones simples de riesgo y cómo evitarlas."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Cuido a un compañero que se lastimó", desc:"Acompañar con ayuda del adulto a un compañero que se lastimó."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Participamos en la construcción de acuerdos de sala", desc:"Colaborar en la construcción de acuerdos simples de convivencia grupal."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Reconozco consecuencias de mis acciones", desc:"Reconocer con ayuda cómo una acción propia afecta a otro."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Pido disculpas cuando corresponde", desc:"Practicar el gesto de pedir disculpas ante un conflicto simple."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Sigo normas de convivencia básicas", desc:"Sostener normas simples acordadas para la vida cotidiana de sala."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco mis logros", desc:"Compartir con el grupo un logro personal reciente."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Trabajamos en pequeños grupos", desc:"Participar de una tarea simple organizada en pequeños grupos."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Cuido mi salud con hábitos simples", desc:"Reconocer hábitos simples de alimentación y descanso saludable."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Reconozco el turno de palabra", desc:"Sostener el respeto del turno de palabra en la ronda diaria."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco a las familias diversas del grupo", desc:"Reconocer y valorar distintas configuraciones familiares del grupo."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Celebramos las diferencias", desc:"Reconocer y valorar diferencias simples entre compañeros del grupo."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco el cuidado del ambiente", desc:"Participar de un gesto simple de cuidado del ambiente de sala."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Reflexiono sobre un conflicto grupal", desc:"Participar de una conversación grupal sobre un conflicto ocurrido."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco mis emociones y las nombro", desc:"Nombrar con mayor precisión las propias emociones en distintas situaciones."},
+  {edad:3, categoria:"Convivencia y vínculos con otros", titulo:"Ayudamos a un compañero con dificultad", desc:"Practicar el gesto de colaborar con un compañero que necesita ayuda."},
+  {edad:3, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco a quién pedir ayuda", desc:"Identificar a qué adultos puede recurrir ante una necesidad."},
+  {edad:3, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Participamos en la elaboración de un cartel de acuerdos", desc:"Colaborar en la elaboración visual de un cartel de acuerdos de sala."},
+  {edad:3, categoria:"Identidad y autonomía", titulo:"Reconozco mi historia personal simple", desc:"Compartir con el grupo un dato simple de su historia personal."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Organizo mis pertenencias con autonomía", desc:"Organizar y cuidar las propias pertenencias sin recordatorio constante."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Tomo decisiones y sostengo argumentos simples", desc:"Explicar con un argumento simple por qué eligió determinada opción."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Reconozco mi historia y la de mi familia", desc:"Compartir aspectos simples de la propia historia familiar y personal."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Expreso desacuerdo de forma respetuosa", desc:"Practicar la expresión de un desacuerdo simple sin agresión."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Trabajamos en equipo con roles", desc:"Participar de una tarea grupal asumiendo un rol simple dentro del equipo."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Negociamos una decisión grupal", desc:"Participar de una negociación simple para tomar una decisión grupal."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Incluyo activamente a todos", desc:"Practicar estrategias simples para incluir a todos en un juego grupal."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Reconozco distintos puntos de vista", desc:"Escuchar y reconocer que un compañero puede pensar diferente."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Sostengo hábitos de autocuidado", desc:"Sostener de forma más autónoma hábitos de higiene y cuidado personal."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Cuido el espacio y los materiales comunes", desc:"Sostener de forma más autónoma el cuidado de los espacios compartidos."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Identifico y comunico un malestar", desc:"Comunicar con mayor precisión un malestar físico o emocional propio."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Ayudo a cuidar a compañeros más chicos", desc:"Participar de un gesto de cuidado hacia niños de salas menores."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Participamos en la construcción de normas grupales", desc:"Colaborar activamente en proponer normas simples de convivencia."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Buscamos soluciones a un conflicto entre pares", desc:"Proponer una posible solución simple ante un conflicto con un compañero."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Reflexiono sobre las consecuencias de mis actos", desc:"Reflexionar con mayor autonomía sobre cómo una acción afecta a otros."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Sostengo un acuerdo aunque no me guste", desc:"Sostener un acuerdo grupal aun cuando no fue su primera elección."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Reconozco mis fortalezas y dificultades", desc:"Reconocer con ayuda una fortaleza y una dificultad personal simple."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Colaboramos en un proyecto grupal", desc:"Participar activamente de un proyecto grupal sostenido en el tiempo."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco el cuidado del ambiente compartido", desc:"Proponer una acción simple de cuidado del ambiente institucional."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Participamos de una asamblea simple de sala", desc:"Participar de una asamblea simple para tomar una decisión colectiva."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Reconozco y valoro mi cultura familiar", desc:"Compartir con el grupo una costumbre propia de la cultura familiar."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Reconocemos y valoramos la diversidad del grupo", desc:"Reconocer y valorar activamente las diferencias dentro del grupo de sala."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco situaciones de cuidado colectivo", desc:"Reconocer situaciones donde el cuidado propio afecta también a otros."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Evaluamos si un acuerdo funcionó", desc:"Participar de una reflexión grupal sobre si un acuerdo de sala funcionó."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Sostengo un compromiso simple en el tiempo", desc:"Sostener un compromiso simple asumido con el grupo durante varios días."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Ayudamos a resolver un conflicto ajeno", desc:"Participar de forma mediadora simple en un conflicto entre dos compañeros."},
+  {edad:4, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco el derecho al descanso y al juego", desc:"Reconocer la importancia del descanso y el juego como derechos propios."},
+  {edad:4, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Proponemos mejoras a las normas de sala", desc:"Proponer una mejora simple a una norma existente de la sala."},
+  {edad:4, categoria:"Identidad y autonomía", titulo:"Reconozco mi progreso a lo largo del año", desc:"Comparar con ayuda cómo cambió una habilidad propia durante el año."},
+  {edad:4, categoria:"Convivencia y vínculos con otros", titulo:"Organizamos un festejo grupal", desc:"Participar de la organización simple de un festejo para todo el grupo."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Me presento con seguridad ante otros", desc:"Presentarse con seguridad ante adultos y grupos nuevos."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Argumento mis decisiones con mayor claridad", desc:"Explicar con claridad los motivos de una decisión personal."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Reconozco mi identidad en relación a mi comunidad", desc:"Reconocer aspectos de la propia identidad vinculados a la comunidad de pertenencia."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Sostengo proyectos personales simples", desc:"Sostener un proyecto personal simple hasta su finalización."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Organizamos el trabajo en equipo con autonomía", desc:"Organizar de forma más autónoma un trabajo en pequeño grupo."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Practicamos la escucha activa", desc:"Practicar la escucha activa sosteniendo la atención en lo que dice otro."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Colaboramos en proyectos institucionales", desc:"Participar de un proyecto que involucra a toda la institución."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Ejercemos un rol de cuidado hacia otros", desc:"Sostener un rol de cuidado activo hacia compañeros o niños más chicos."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Sostengo hábitos saludables con autonomía", desc:"Sostener hábitos de cuidado personal de forma prácticamente autónoma."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco y comunico mis emociones complejas", desc:"Nombrar con mayor precisión emociones complejas propias y ajenas."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Cuidamos el ambiente institucional", desc:"Sostener acciones concretas de cuidado del ambiente institucional."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Reconozco a quién acudir en distintas situaciones", desc:"Identificar con precisión a qué adulto recurrir según la situación."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Diseñamos normas de convivencia con el grupo", desc:"Participar activamente en el diseño de normas de convivencia grupal."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Mediamos en un conflicto entre compañeros", desc:"Intentar mediar de forma simple en un conflicto entre dos compañeros."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Reflexionamos sobre la justicia en el grupo", desc:"Participar de una reflexión grupal simple sobre qué es justo o injusto."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Sostenemos acuerdos a largo plazo", desc:"Sostener un acuerdo grupal a lo largo de varias semanas."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Reconozco mi trayectoria en el jardín", desc:"Reflexionar sobre el propio recorrido a lo largo de los años en el jardín."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Colaboramos con otras salas del jardín", desc:"Participar de una actividad colaborativa junto a otra sala del jardín."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Proponemos una campaña de cuidado", desc:"Proponer y sostener una pequeña campaña de cuidado dentro del jardín."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Evaluamos el funcionamiento de las normas del grupo", desc:"Participar de una evaluación grupal sobre el funcionamiento de las normas de sala."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Me preparo para el próximo nivel educativo", desc:"Conversar sobre expectativas y sentimientos frente al pasaje a la escuela primaria."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Organizamos un acto de cierre grupal", desc:"Participar de la organización de un acto o festejo de cierre de sala."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Reflexionamos sobre el cuidado mutuo del grupo", desc:"Participar de una reflexión sobre cómo se cuidó el grupo durante el año."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Elaboramos un código de convivencia propio", desc:"Colaborar en la elaboración de un código simple de convivencia de sala."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Reconozco mis intereses para el futuro cercano", desc:"Compartir con el grupo un interés o deseo relacionado con el crecimiento."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Practicamos la empatía en situaciones simuladas", desc:"Participar de situaciones simuladas que requieren ponerse en el lugar del otro."},
+  {edad:5, categoria:"Cuidado de sí y de los otros", titulo:"Cuidamos a las familias que visitan el jardín", desc:"Participar de un gesto de recibimiento y cuidado hacia visitas familiares."},
+  {edad:5, categoria:"Normas, acuerdos y resolución de conflictos", titulo:"Resolvemos conflictos sin intervención constante del adulto", desc:"Intentar resolver un conflicto simple entre pares con intervención mínima del adulto."},
+  {edad:5, categoria:"Identidad y autonomía", titulo:"Celebro mi trayectoria personal con el grupo", desc:"Participar de un cierre simbólico que reconozca el propio recorrido del año."},
+  {edad:5, categoria:"Convivencia y vínculos con otros", titulo:"Despedimos el año reconociendo a cada compañero", desc:"Participar de un cierre grupal que reconozca a cada integrante de la sala."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>

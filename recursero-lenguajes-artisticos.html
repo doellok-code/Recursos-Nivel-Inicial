@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Lenguajes Artísticos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Lenguajes Artísticos · Recurso docente</span>
+    <h1>Recursero de <em>lenguajes artísticos</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> Lenguajes Artísticos es área formal del Diseño Curricular, organizada en cuatro lenguajes (Plástica · Música · Expresión corporal y teatro · Literatura), solo en Sala de 3, 4 y 5. En Sala de 1 y 2 años las propuestas son exploración artística informal, sensorial y expresiva, no contenidos curriculares del área.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Exploración plástica", titulo:"Pinto con las manos", desc:"Explorar témpera apta para bebés directamente con las manos sobre papel grande."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Marco con esponjas", desc:"Explorar el sello que deja una esponja mojada en témpera sobre papel."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Garabateo libre con crayón grueso", desc:"Explorar el trazo espontáneo con un crayón grueso sobre una hoja grande."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Toco pinturas de distinta textura", desc:"Explorar témperas mezcladas con arena o harina para variar la textura."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Pego papeles de colores", desc:"Explorar el pegado de trozos de papel de colores sobre una base."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Dibujo con tiza en el patio", desc:"Explorar el trazo con tiza gruesa sobre el piso del patio."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Escucho música y me muevo", desc:"Escuchar una canción y moverse libremente al ritmo con el cuerpo."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Agito un sonajero al ritmo", desc:"Agitar un sonajero mientras suena una canción conocida."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Escucho sonidos graves y agudos", desc:"Escuchar instrumentos con sonidos contrastantes: grave y agudo."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Canción de upa", desc:"Ser mecido en upa al ritmo de una canción suave."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Golpeo un tambor de juguete", desc:"Explorar el sonido al golpear un tambor de juguete con la mano."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Escucho distintos ritmos", desc:"Escuchar canciones de ritmos variados: rápido y lento."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Muevo mi cuerpo con telas", desc:"Explorar el movimiento del cuerpo sosteniendo una tela liviana."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Imito gestos simples", desc:"Imitar gestos simples del adulto como aplaudir o saludar."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Juego de las cosquillas con música", desc:"Combinar cosquillas suaves con una canción como juego corporal."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Me muevo rápido y lento", desc:"Explorar el movimiento del cuerpo al ritmo de música rápida y lenta."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Escondo mi cara con la tela", desc:"Jugar a esconder y mostrar la cara con una tela como juego expresivo."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Miro un libro de imágenes", desc:"Explorar un libro con imágenes grandes y contrastantes."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Cuento con títere simple", desc:"Escuchar un cuento corto acompañado de un títere de mano."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Libro de texturas", desc:"Explorar un libro de tela con texturas distintas en cada página."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Miro láminas de arte", desc:"Observar láminas simples con colores contrastantes."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Cuento con sonidos", desc:"Escuchar un cuento breve con onomatopeyas exageradas por el adulto."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Estampo con frutas cortadas", desc:"Explorar el sello que deja una fruta cortada mojada en témpera."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Suena la caja de música", desc:"Escuchar una caja de música y observar la reacción corporal."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Bailo con un objeto en la mano", desc:"Moverse libremente sosteniendo un objeto liviano y colorido."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Dejo huellas con las manos", desc:"Dejar la huella de la mano mojada en témpera sobre una hoja grande."},
+  {edad:1, categoria:"Exploración sonora y musical", titulo:"Instrumentos caseros para tocar", desc:"Explorar el sonido de instrumentos caseros simples como cucharas."},
+  {edad:1, categoria:"Cuentos e imágenes", titulo:"Miro fotos de la familia como cuento", desc:"Armar un pequeño relato visual con fotos familiares impresas."},
+  {edad:1, categoria:"Juego corporal y expresivo", titulo:"Juego con globos livianos", desc:"Mover el cuerpo siguiendo un globo liviano que se mueve en el aire."},
+  {edad:1, categoria:"Exploración plástica", titulo:"Pinto con rodillo grande", desc:"Explorar el trazo que deja un rodillo con témpera sobre papel grande."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Mezclo dos colores", desc:"Explorar qué color nuevo se forma al mezclar témperas con los dedos."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Estampo con objetos naturales", desc:"Estampar hojas y ramitas mojadas en témpera sobre papel."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Dibujo con distintos elementos", desc:"Explorar el trazo con crayón, marcador y tiza en una misma hoja."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Collage con materiales variados", desc:"Armar un collage libre con papeles, telas y algodón."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Pinto sobre superficies distintas", desc:"Explorar témpera sobre cartón, papel y tela."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Modelo con masa casera", desc:"Explorar formas simples con masa de sal casera."},
+  {edad:2, categoria:"Música y sonido", titulo:"Sigo el ritmo con palmas", desc:"Acompañar una canción conocida marcando el ritmo con palmas."},
+  {edad:2, categoria:"Música y sonido", titulo:"Comparo instrumentos", desc:"Explorar y comparar el sonido de dos instrumentos distintos."},
+  {edad:2, categoria:"Música y sonido", titulo:"Canción con gestos", desc:"Cantar una canción incorporando gestos que la acompañan."},
+  {edad:2, categoria:"Música y sonido", titulo:"Marcho al ritmo del tambor", desc:"Caminar y detenerse según el ritmo de un tambor tocado por el adulto."},
+  {edad:2, categoria:"Música y sonido", titulo:"Escucho música de distintos estilos", desc:"Escuchar breves fragmentos de música de estilos variados."},
+  {edad:2, categoria:"Música y sonido", titulo:"Armo una orquesta de sala", desc:"Tocar instrumentos caseros junto a los compañeros de forma libre."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Imito animales con el cuerpo", desc:"Moverse imitando la forma de desplazarse de distintos animales."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Juego con un disfraz simple", desc:"Explorar el juego dramático usando una prenda o accesorio simple."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Expreso emociones con la cara", desc:"Jugar a mostrar con gestos faciales distintas emociones simples."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Juego a ser grande y chico", desc:"Explorar con el cuerpo la diferencia entre moverse grande y chico."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Dramatizamos una canción conocida", desc:"Actuar con el cuerpo la letra de una canción infantil conocida."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Elijo un cuento para escuchar", desc:"Elegir entre dos cuentos cuál quiere que le lean."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Cuento con función de títeres", desc:"Escuchar un cuento breve representado con títeres simples."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Miro y comento láminas de arte", desc:"Observar una lámina de arte y comentar libremente qué ve."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Invento un final para el cuento", desc:"Proponer entre todos un final distinto para un cuento conocido."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Pinto con témpera y agua", desc:"Explorar la técnica de la témpera diluida en agua sobre papel absorbente."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Armo un mural grupal", desc:"Participar de una producción plástica colectiva sobre papel grande."},
+  {edad:2, categoria:"Música y sonido", titulo:"Canción de saludo con instrumentos", desc:"Acompañar la canción de saludo tocando un instrumento simple."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Contamos una historia con el cuerpo", desc:"Representar corporalmente una secuencia simple de una historia conocida."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Cuento con onomatopeyas para repetir", desc:"Participar repitiendo las onomatopeyas de un cuento conocido."},
+  {edad:2, categoria:"Exploración plástica", titulo:"Estampo con tapitas", desc:"Usar tapitas mojadas en témpera para estampar formas circulares."},
+  {edad:2, categoria:"Música y sonido", titulo:"Ronda cantada con instrumentos", desc:"Participar de una ronda cantada acompañada con instrumentos de sala."},
+  {edad:2, categoria:"Expresión corporal y juego dramático", titulo:"Juego a ser un personaje", desc:"Elegir un personaje simple y moverse como él por un momento."},
+  {edad:2, categoria:"Literatura y narración con imágenes", titulo:"Armamos un cuento con dibujos propios", desc:"Dictar una historia breve a partir de un dibujo propio realizado."},
+  {edad:3, categoria:"Plástica", titulo:"Exploro colores primarios", desc:"Explorar témpera de los tres colores primarios y sus mezclas."},
+  {edad:3, categoria:"Plástica", titulo:"Dibujo con distintos soportes", desc:"Producir dibujos sobre papeles de distinto tamaño y textura."},
+  {edad:3, categoria:"Plástica", titulo:"Modelo con arcilla o plastilina", desc:"Explorar la modelación tridimensional con arcilla o plastilina."},
+  {edad:3, categoria:"Plástica", titulo:"Observamos una obra de arte", desc:"Observar y comentar libremente una obra de arte sencilla."},
+  {edad:3, categoria:"Plástica", titulo:"Estampo con distintos elementos", desc:"Producir estampas con esponjas, tapitas y elementos naturales."},
+  {edad:3, categoria:"Plástica", titulo:"Collage con consigna simple", desc:"Armar un collage siguiendo una consigna temática simple."},
+  {edad:3, categoria:"Plástica", titulo:"Pinto lo que escucho", desc:"Producir un dibujo libre mientras se escucha una pieza musical."},
+  {edad:3, categoria:"Música", titulo:"Reconozco instrumentos por su sonido", desc:"Identificar instrumentos musicales conocidos por su sonido."},
+  {edad:3, categoria:"Música", titulo:"Marco el pulso de una canción", desc:"Acompañar una canción marcando el pulso con el cuerpo o instrumentos."},
+  {edad:3, categoria:"Música", titulo:"Canto canciones del repertorio infantil", desc:"Aprender e interpretar canciones sencillas del repertorio de sala."},
+  {edad:3, categoria:"Música", titulo:"Comparo fuerte y suave", desc:"Explorar la intensidad del sonido: fuerte y suave, con instrumentos."},
+  {edad:3, categoria:"Música", titulo:"Armamos una banda de sala", desc:"Interpretar una canción simple con instrumentos de percusión de sala."},
+  {edad:3, categoria:"Música", titulo:"Escucho y describo lo que siento", desc:"Escuchar una pieza musical y describir con palabras qué sensación produce."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Juego con máscaras simples", desc:"Explorar el juego dramático usando máscaras simples de cartón."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Improviso una escena corta", desc:"Representar una escena breve a partir de una consigna simple."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Expreso con el cuerpo distintos climas", desc:"Moverse expresando climas emocionales distintos con el cuerpo."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Juego del espejo", desc:"Imitar los movimientos de un compañero como si fuera un espejo."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Armamos una función con títeres", desc:"Preparar una breve función de títeres para presentar al grupo."},
+  {edad:3, categoria:"Literatura", titulo:"Escucho poesías simples", desc:"Escuchar poesías breves con rima sencilla para disfrutar del lenguaje."},
+  {edad:3, categoria:"Literatura", titulo:"Comparo dos cuentos con el mismo personaje", desc:"Escuchar dos cuentos distintos que comparten un mismo tipo de personaje."},
+  {edad:3, categoria:"Literatura", titulo:"Recreo un cuento con dibujos", desc:"Representar con un dibujo la parte del cuento que más gustó."},
+  {edad:3, categoria:"Literatura", titulo:"Cuento con estructura repetitiva", desc:"Disfrutar de un cuento con estructura de repetición, anticipando frases."},
+  {edad:3, categoria:"Literatura", titulo:"Visitamos la biblioteca de sala", desc:"Explorar libremente los libros disponibles en el rincón de biblioteca."},
+  {edad:3, categoria:"Plástica", titulo:"Exploramos texturas con crayón y papel", desc:"Producir frotados de texturas usando crayón sobre papel fino."},
+  {edad:3, categoria:"Música", titulo:"Instrumentos de viento, cuerda y percusión", desc:"Clasificar instrumentos conocidos según su familia sonora."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Contamos un cuento con el cuerpo", desc:"Representar corporalmente la secuencia de un cuento conocido."},
+  {edad:3, categoria:"Literatura", titulo:"Escuchamos un cuento con distintas voces", desc:"Escuchar un cuento narrado con voces diferenciadas por personaje."},
+  {edad:3, categoria:"Plástica", titulo:"Pinto un paisaje simple", desc:"Producir un dibujo o pintura libre inspirado en un paisaje observado."},
+  {edad:3, categoria:"Música", titulo:"Canción con instrumento elegido", desc:"Elegir un instrumento y acompañar con él una canción conocida."},
+  {edad:3, categoria:"Expresión corporal y teatro", titulo:"Juego a transformar objetos", desc:"Usar un objeto simple como si fuera otra cosa en el juego dramático."},
+  {edad:4, categoria:"Plástica", titulo:"Mezclo para lograr un color deseado", desc:"Experimentar mezclas de témpera para lograr un color específico buscado."},
+  {edad:4, categoria:"Plástica", titulo:"Produzco con distintos formatos de papel", desc:"Producir sobre papel apaisado, vertical y circular, según la propuesta."},
+  {edad:4, categoria:"Plástica", titulo:"Observamos y comparamos dos obras", desc:"Comparar dos obras de arte distintas y describir semejanzas y diferencias."},
+  {edad:4, categoria:"Plástica", titulo:"Modelo un personaje simple", desc:"Modelar con arcilla un personaje simple a partir de un cuento trabajado."},
+  {edad:4, categoria:"Plástica", titulo:"Produzco con la técnica del grabado simple", desc:"Explorar una técnica sencilla de impresión repetida con un mismo molde."},
+  {edad:4, categoria:"Plástica", titulo:"Diseño una tarjeta con consigna", desc:"Producir una tarjeta ilustrada respondiendo a una consigna temática."},
+  {edad:4, categoria:"Plástica", titulo:"Pinto con distintos pinceles", desc:"Explorar el trazo de pinceles de distinto grosor sobre un mismo papel."},
+  {edad:4, categoria:"Música", titulo:"Reconozco melodías conocidas", desc:"Identificar canciones conocidas al escuchar solo la melodía."},
+  {edad:4, categoria:"Música", titulo:"Combino instrumentos en una producción", desc:"Combinar dos o más instrumentos para acompañar una misma canción."},
+  {edad:4, categoria:"Música", titulo:"Invento una secuencia rítmica simple", desc:"Crear y repetir una secuencia rítmica corta con el cuerpo o instrumentos."},
+  {edad:4, categoria:"Música", titulo:"Diferencio rápido y lento", desc:"Explorar el tempo musical moviéndose rápido y lento según la música."},
+  {edad:4, categoria:"Música", titulo:"Escuchamos música de otras culturas", desc:"Escuchar y comentar música de tradiciones culturales distintas."},
+  {edad:4, categoria:"Música", titulo:"Acompaño un cuento con sonidos", desc:"Sonorizar un cuento con instrumentos elegidos para cada momento."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Improviso a partir de un objeto", desc:"Crear una escena breve a partir de un objeto disparador."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Construimos un personaje entre todos", desc:"Definir características de un personaje y representarlo grupalmente."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Juego con niveles corporales", desc:"Explorar el movimiento en distintos niveles: alto, medio, bajo."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Armamos una escenografía simple", desc:"Diseñar y construir una escenografía simple para una función."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Presentamos una función para otra sala", desc:"Preparar y presentar una breve función teatral para otro grupo."},
+  {edad:4, categoria:"Literatura", titulo:"Comparo distintas versiones de un cuento", desc:"Escuchar dos versiones distintas de un mismo cuento tradicional."},
+  {edad:4, categoria:"Literatura", titulo:"Recito una poesía con entonación", desc:"Aprender y recitar una poesía breve cuidando la entonación."},
+  {edad:4, categoria:"Literatura", titulo:"Invento un cuento con la caja de personajes", desc:"Crear un cuento grupal a partir de personajes elegidos al azar."},
+  {edad:4, categoria:"Literatura", titulo:"Comparo el cuento con la película", desc:"Comparar la versión escrita de un cuento con su adaptación audiovisual."},
+  {edad:4, categoria:"Literatura", titulo:"Armamos un libro colectivo", desc:"Producir un libro grupal con textos dictados e ilustraciones propias."},
+  {edad:4, categoria:"Plástica", titulo:"Produzco con material reciclado", desc:"Diseñar una producción tridimensional con materiales reciclados."},
+  {edad:4, categoria:"Música", titulo:"Diseñamos una canción con nueva letra", desc:"Cambiar la letra de una canción conocida manteniendo la melodía."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Exploramos el ritmo con desplazamientos", desc:"Combinar desplazamientos corporales con distintos ritmos musicales."},
+  {edad:4, categoria:"Literatura", titulo:"Analizamos las ilustraciones de un cuento", desc:"Observar y comentar cómo las ilustraciones acompañan la historia."},
+  {edad:4, categoria:"Plástica", titulo:"Trabajo con la técnica del puntillismo simple", desc:"Explorar la técnica de producir imágenes a partir de puntos de color."},
+  {edad:4, categoria:"Música", titulo:"Reconozco canciones de distintos géneros", desc:"Escuchar y clasificar canciones según géneros musicales simples."},
+  {edad:4, categoria:"Expresión corporal y teatro", titulo:"Juego de roles con diálogo simple", desc:"Representar una escena breve incluyendo diálogo entre personajes."},
+  {edad:5, categoria:"Plástica", titulo:"Diseño una producción con intención propia", desc:"Producir una obra plástica planificando previamente qué quiere representar."},
+  {edad:5, categoria:"Plástica", titulo:"Investigamos la obra de un artista", desc:"Conocer la obra de un artista y producir algo inspirado en su estilo."},
+  {edad:5, categoria:"Plástica", titulo:"Combino distintas técnicas en una obra", desc:"Combinar dos técnicas plásticas distintas en una misma producción."},
+  {edad:5, categoria:"Plástica", titulo:"Diseñamos una muestra de sala", desc:"Organizar y curar una muestra con las producciones plásticas del grupo."},
+  {edad:5, categoria:"Plástica", titulo:"Produzco una escultura simple", desc:"Diseñar y construir una escultura simple con materiales variados."},
+  {edad:5, categoria:"Plástica", titulo:"Ilustro mi propio cuento", desc:"Ilustrar un cuento inventado o dictado por el propio niño."},
+  {edad:5, categoria:"Plástica", titulo:"Reflexiono sobre mi propia producción", desc:"Comentar oralmente las decisiones tomadas en una producción propia."},
+  {edad:5, categoria:"Música", titulo:"Compongo una secuencia rítmica más compleja", desc:"Crear y registrar una secuencia rítmica de mayor extensión."},
+  {edad:5, categoria:"Música", titulo:"Dirijo una producción musical grupal", desc:"Coordinar como director una breve interpretación musical grupal."},
+  {edad:5, categoria:"Música", titulo:"Comparo versiones distintas de una canción", desc:"Escuchar dos versiones distintas de una misma canción y compararlas."},
+  {edad:5, categoria:"Música", titulo:"Sonorizo una historia inventada", desc:"Crear la banda sonora de una historia inventada por el grupo."},
+  {edad:5, categoria:"Música", titulo:"Investigamos un instrumento en profundidad", desc:"Investigar el origen y las características de un instrumento elegido."},
+  {edad:5, categoria:"Música", titulo:"Registro gráfico de un ritmo", desc:"Representar gráficamente una secuencia rítmica escuchada."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Escribimos y representamos una obra breve", desc:"Crear un guion breve entre todos y representarlo ante otro grupo."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Diseño el vestuario de mi personaje", desc:"Diseñar elementos de vestuario simples para un personaje propio."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Exploro la voz como recurso expresivo", desc:"Explorar distintos tonos de voz para expresar emociones de un personaje."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Analizamos una función vista", desc:"Comentar y opinar sobre una función teatral presenciada por el grupo."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Organizamos una muestra teatral", desc:"Organizar una presentación teatral abierta a las familias."},
+  {edad:5, categoria:"Literatura", titulo:"Comparo distintos autores", desc:"Escuchar cuentos de dos autores distintos y comparar sus estilos."},
+  {edad:5, categoria:"Literatura", titulo:"Escribo mi propio cuento dictado", desc:"Dictar un cuento propio con estructura de inicio, nudo y desenlace."},
+  {edad:5, categoria:"Literatura", titulo:"Investigamos sobre un autor", desc:"Investigar en grupo datos sencillos sobre un autor de literatura infantil."},
+  {edad:5, categoria:"Literatura", titulo:"Comparamos poesía y cuento", desc:"Reconocer diferencias entre un texto poético y un texto narrativo."},
+  {edad:5, categoria:"Literatura", titulo:"Armamos una antología de sala", desc:"Recopilar los textos favoritos del grupo en una antología colectiva."},
+  {edad:5, categoria:"Plástica", titulo:"Investigamos el arte de otras culturas", desc:"Conocer producciones artísticas de distintas culturas y períodos."},
+  {edad:5, categoria:"Música", titulo:"Componemos una canción propia", desc:"Crear una canción simple con letra y melodía propias del grupo."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Improviso a partir de una emoción", desc:"Crear una escena breve a partir de una emoción propuesta."},
+  {edad:5, categoria:"Literatura", titulo:"Recomiendo un libro a un compañero", desc:"Presentar oralmente un libro leído recomendándolo al grupo."},
+  {edad:5, categoria:"Plástica", titulo:"Diseño un afiche para un evento de sala", desc:"Producir un afiche ilustrado para comunicar un evento del jardín."},
+  {edad:5, categoria:"Música", titulo:"Presentamos un espectáculo musical", desc:"Preparar y presentar un breve espectáculo musical para las familias."},
+  {edad:5, categoria:"Expresión corporal y teatro", titulo:"Reflexiono sobre mi personaje", desc:"Comentar oralmente cómo se sintió representando a su personaje."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>

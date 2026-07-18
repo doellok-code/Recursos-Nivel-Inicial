@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recursero de Educación Física</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&family=Dancing+Script:wght@600;700&family=Manrope:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#b5228f;
+    --paper:#fff2f8;
+    --card:#fffbfd;
+    --coral:#ffc9de;
+    --teal:#ffb8d6;
+    --yellow:#ffe2ee;
+    --grape:#ec5ba8;
+    --magenta:#ef8ec4;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Manrope',sans-serif;
+    min-height:100vh;
+    position:relative;
+    overflow-x:hidden;
+    padding-bottom:60px;
+  }
+  .bg-shape{position:absolute;z-index:0;pointer-events:none;}
+  header{
+    position:relative;z-index:2;
+    padding:56px 24px 12px;
+    max-width:960px;
+    margin:0 auto;
+  }
+  .eyebrow{
+    display:inline-flex;
+    font-weight:800;
+    font-size:13px;
+    letter-spacing:.14em;
+    text-transform:uppercase;
+    background:var(--ink);
+    color:var(--paper);
+    padding:7px 14px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:'Playfair Display',serif;
+    font-weight:800;
+    font-size:clamp(32px,5.5vw,52px);
+    line-height:1.05;
+    margin:22px 0 12px;
+  }
+  h1 em{color:var(--grape);font-style:italic;}
+  .lede{font-size:17px;line-height:1.55;max-width:58ch;color:#5c1f42;margin:0;}
+  .author-line{font-size:16px;color:var(--grape);margin:14px 0 0;font-weight:600;}
+  .author-line .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:19px;text-transform:none;}
+
+  .note{
+    position:relative;z-index:2;
+    max-width:960px;
+    margin:18px auto 0;
+    padding:0 24px;
+  }
+  .note-inner{
+    background:var(--card);
+    border:2px dashed var(--grape);
+    border-radius:18px;
+    padding:16px 20px;
+    font-size:14px;
+    line-height:1.55;
+    color:#5c1f42;
+  }
+  .note-inner strong{color:var(--grape);}
+
+  .panel{position:relative;z-index:2;max-width:960px;margin:26px auto 30px;padding:0 24px;}
+  .panel-inner{
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:28px;
+    padding:30px;
+    box-shadow:10px 10px 0 var(--ink);
+  }
+  .field{margin-bottom:24px;}
+  .field:last-child{margin-bottom:0;}
+  .field-label{
+    font-weight:800;
+    font-size:12.5px;
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    margin-bottom:12px;
+    display:block;
+  }
+  .chip-row{display:flex;flex-wrap:wrap;gap:9px;}
+  .chip{
+    font-weight:700;
+    font-size:14px;
+    padding:9px 16px;
+    border:2.5px solid var(--ink);
+    border-radius:100px;
+    background:var(--paper);
+    color:var(--ink);
+    cursor:pointer;
+    transition:transform .12s ease;
+    user-select:none;
+  }
+  .chip:hover{transform:translateY(-2px);}
+  .chip.active{background:var(--ink);color:var(--paper);}
+
+  .generate-wrap{display:flex;justify-content:center;margin:34px 0 4px;}
+  .generate-btn{
+    font-weight:800;
+    font-size:16.5px;
+    color:var(--paper);
+    background:var(--ink);
+    border:none;
+    border-radius:100px;
+    padding:19px 38px;
+    cursor:pointer;
+    box-shadow:6px 6px 0 var(--grape);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .generate-btn:hover{transform:translate(-2px,-2px);box-shadow:8px 8px 0 var(--grape);}
+  .generate-btn:active{transform:translate(2px,2px);box-shadow:2px 2px 0 var(--grape);}
+
+  .result-wrap{position:relative;z-index:2;max-width:960px;margin:0 auto;padding:0 24px;min-height:40px;}
+  .card{
+    position:relative;
+    background:var(--card);
+    border:3px solid var(--ink);
+    border-radius:26px;
+    padding:32px;
+    margin-top:10px;
+    opacity:0;
+    transform:translateY(14px) scale(.98);
+    transition:opacity .35s ease, transform .35s ease;
+  }
+  .card.show{opacity:1;transform:translateY(0) scale(1);}
+  .card-top{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px;}
+  .badge{
+    font-weight:800;
+    font-size:12px;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+    padding:6px 13px;
+    border-radius:100px;
+    border:2px solid var(--ink);
+    background:var(--coral);
+    color:var(--ink);
+  }
+  .card h2{
+    font-family:'Playfair Display',serif;
+    font-size:clamp(22px,3.6vw,28px);
+    font-weight:800;
+    margin:0 0 14px;
+  }
+  .card p{font-size:16px;line-height:1.6;margin:0;color:#4a1730;}
+  .again-wrap{display:flex;justify-content:center;margin-top:20px;}
+  .again-btn{
+    font-weight:800;
+    font-size:14px;
+    background:transparent;
+    border:2.5px solid var(--ink);
+    color:var(--ink);
+    border-radius:100px;
+    padding:12px 22px;
+    cursor:pointer;
+  }
+  .again-btn:hover{background:var(--ink);color:var(--paper);}
+
+  footer{position:relative;z-index:2;text-align:center;font-size:13px;color:#a35c80;margin-top:60px;padding:0 24px;}
+  footer .signature{font-family:'Dancing Script',cursive;font-weight:700;font-size:15px;text-transform:none;}
+</style>
+</head>
+<body>
+
+  <div class="bg-shape" style="top:120px; right:-60px;">
+    <svg width="220" height="220" viewBox="0 0 220 220"><path d="M110 6C170 6 214 54 214 110C214 168 168 214 108 214C50 214 6 166 6 108C6 52 52 6 110 6Z" fill="none" stroke="#f2a9ce" stroke-width="3" opacity="0.6"/></svg>
+  </div>
+  <div class="bg-shape" style="top:40px; left:-40px;">
+    <svg width="140" height="140" viewBox="0 0 140 140"><polygon points="70,0 140,140 0,140" fill="#ffd9e9" opacity="0.9"/></svg>
+  </div>
+  <div class="bg-shape" style="bottom:60px; left:20px;">
+    <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#ec5ba8" opacity="0.55"/></svg>
+  </div>
+
+  <header>
+    <span class="eyebrow">Educación Física · Recurso docente</span>
+    <h1>Recursero de <em>educación física</em></h1>
+    <p class="lede">Elegí la sala y, si querés, un eje puntual. Cada toque te da una propuesta concreta, progresiva según el Diseño Curricular.</p>
+    <p class="author-line">Un material de <span class="signature">Karina Doello</span></p>
+  </header>
+
+  <section class="note">
+    <div class="note-inner">
+      <strong>Nota curricular:</strong> Educación Física es área formal, organizada en tres ejes (Corporeidad y motricidad · Corporeidad y sociomotricidad · Corporeidad y motricidad en relación con el ambiente), solo en Sala de 3, 4 y 5. En Sala de 1 y 2 años las propuestas son exploración corporal informal, en línea con esos mismos ejes pero sin su estructura curricular formal.
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-inner">
+      <div class="field">
+        <span class="field-label">Sala</span>
+        <div class="chip-row" id="edad-row">
+          <button class="chip active" data-edad="todas">Todas</button>
+          <button class="chip" data-edad="1">Sala de 1 año</button>
+          <button class="chip" data-edad="2">Sala de 2 años</button>
+          <button class="chip" data-edad="3">Sala de 3 años</button>
+          <button class="chip" data-edad="4">Sala de 4 años</button>
+          <button class="chip" data-edad="5">Sala de 5 años</button>
+        </div>
+      </div>
+      <div class="field">
+        <span class="field-label">Eje / categoría</span>
+        <div class="chip-row" id="cat-row">
+          <button class="chip active" data-cat="todas">Todas las categorías</button>
+        </div>
+      </div>
+      <div class="generate-wrap">
+        <button class="generate-btn" id="generate-btn">Generar propuesta →</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="result-wrap" id="result-wrap"></section>
+
+  <footer>Material elaborado por <span class="signature">Karina Doello</span></footer>
+
+<script>
+const ACTIVITIES = [
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Toco mis manos y pies", desc:"Explorar con las manos las propias manos y pies en un momento de juego."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Me miro en el espejo", desc:"Observar el propio cuerpo reflejado en un espejo bajo de sala."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Muevo mis brazos y piernas", desc:"Explorar el movimiento libre de brazos y piernas boca arriba."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Sostengo la cabeza erguida", desc:"Momento breve de boca abajo para fortalecer el sostén de la cabeza."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Giro de costado a costado", desc:"Explorar el giro del propio cuerpo de un costado al otro."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Pataleo con fuerza", desc:"Explorar el movimiento de piernas pataleando boca arriba."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Gateo hacia el objeto", desc:"Gatear para alcanzar un objeto colocado a poca distancia."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Reptar por la colchoneta", desc:"Explorar el desplazamiento reptando sobre una colchoneta blanda."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Me paro sostenido", desc:"Pararse sostenido de un mueble bajo y seguro."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Primeros pasos con apoyo", desc:"Practicar pasos sostenido de las manos del adulto."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Subo a upa y bajo", desc:"Practicar el gesto de ser levantado y apoyado nuevamente en el piso."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Upa y mecida compartida", desc:"Compartir un momento de mecida en upa con contacto corporal cercano."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Juego de las manitos", desc:"Tomar las manos del adulto para un juego de balanceo suave."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Persecución lenta y suave", desc:"Ser perseguido suavemente mientras gatea, generando risa compartida."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Paso la pelota con el adulto", desc:"Recibir y devolver una pelota blanda en un intercambio simple."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Exploro el espacio gateando", desc:"Gatear libremente explorando distintos sectores seguros de la sala."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Adentro y afuera del cesto", desc:"Explorar el propio cuerpo entrando y saliendo de un cesto grande y seguro."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Toco distintas superficies con el cuerpo", desc:"Explorar el contacto del cuerpo con superficies blandas y firmes."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Me desplazo hacia la luz", desc:"Gatear en dirección a un estímulo visual como una linterna suave."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Aplaudo con ayuda", desc:"Practicar el gesto de aplaudir juntando ambas manos con ayuda."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Estiro el cuerpo entero", desc:"Explorar el estiramiento del cuerpo al despertar de la siesta."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Gateo cruzado", desc:"Favorecer el gateo alternando manos y rodillas opuestas."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Camino de la mano", desc:"Caminar tomado de una sola mano del adulto por un tramo corto."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Juego de empujar la pelota", desc:"Empujar una pelota grande junto a otro bebé o el adulto."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Nos movemos al ritmo de la música", desc:"Ser mecido o acompañado en el movimiento al ritmo de una canción."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Bajo la manta y afuera", desc:"Explorar el propio cuerpo pasando por debajo de una manta sostenida baja."},
+  {edad:1, categoria:"Exploración del propio cuerpo", titulo:"Toco mi cara con las manos", desc:"Explorar el propio rostro con las manos frente a un espejo."},
+  {edad:1, categoria:"Movimiento y desplazamiento", titulo:"Me siento sin apoyo", desc:"Practicar breves momentos de sedestación sin apoyo, con supervisión."},
+  {edad:1, categoria:"Movimiento en relación al espacio", titulo:"Alcanzo el objeto colgado", desc:"Estirar el cuerpo para alcanzar un objeto colgado a baja altura."},
+  {edad:1, categoria:"Movimiento con otros", titulo:"Ronda de upa entre varios bebés", desc:"Compartir un momento de canción y mecida junto a otros bebés en upa."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Reconozco partes de mi cuerpo", desc:"Señalar y nombrar partes del propio cuerpo frente al espejo."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Juego con mi sombra", desc:"Observar y mover el propio cuerpo siguiendo su sombra proyectada."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Me muevo rápido y despacio", desc:"Explorar el movimiento corporal variando la velocidad según una consigna."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Salto con los dos pies", desc:"Practicar el salto con ambos pies juntos en el lugar."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Camino en puntas de pie", desc:"Explorar el desplazamiento en puntas de pie por un tramo corto."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Circuito de gateo y caminata", desc:"Recorrer un circuito simple combinando gateo y caminata."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Subo y bajo escalones bajos", desc:"Practicar el ascenso y descenso de escalones bajos con apoyo."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Camino sobre una línea", desc:"Caminar siguiendo una línea pintada o de cinta en el piso."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Corro tras la pelota", desc:"Correr para alcanzar una pelota que rueda despacio."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Nos tomamos de las manos y giramos", desc:"Girar en ronda tomados de las manos con un compañero."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Empujamos juntos una caja", desc:"Empujar entre dos una caja liviana de un lado a otro."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Juego de la mancha suave", desc:"Participar de una versión simple y sin contacto fuerte del juego de la mancha."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Pasamos la pelota en ronda", desc:"Pasarse una pelota entre varios compañeros sentados en ronda."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Paso por el túnel", desc:"Gatear o caminar agachado a través de un túnel de tela."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Salto dentro de los aros", desc:"Saltar y pisar dentro de aros distribuidos en el piso."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Camino entre obstáculos", desc:"Caminar sorteando obstáculos bajos distribuidos en la sala."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Exploro el patio con el cuerpo", desc:"Recorrer libremente el patio explorando distintas texturas del piso."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Bailo libremente", desc:"Moverse libremente al ritmo de la música explorando distintos gestos."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Me quedo quieto como estatua", desc:"Jugar a moverse y quedar completamente quieto ante una señal."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Camino hacia atrás con cuidado", desc:"Explorar el desplazamiento hacia atrás con supervisión cercana."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Jugamos a las escondidas simples", desc:"Participar de un juego simple de esconderse y ser encontrado."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Trepo con seguridad", desc:"Explorar el trepado en una estructura baja y segura del patio."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Salto desde un escalón bajo", desc:"Practicar el salto desde un escalón bajo cayendo con los dos pies."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Circuito con distintas texturas de piso", desc:"Recorrer un circuito descalzo sobre distintas texturas seguras."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Juego del espejo con un compañero", desc:"Imitar los movimientos simples de un compañero como si fuera un espejo."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Lanzo la pelota lejos", desc:"Explorar el lanzamiento de una pelota liviana hacia adelante."},
+  {edad:2, categoria:"Exploración del propio cuerpo", titulo:"Giro sobre mí mismo", desc:"Explorar el giro del propio cuerpo con cuidado y supervisión."},
+  {edad:2, categoria:"Movimiento y desplazamiento", titulo:"Camino llevando un objeto", desc:"Desplazarse llevando un objeto liviano sin dejarlo caer."},
+  {edad:2, categoria:"Movimiento con otros", titulo:"Bailamos en pareja tomados de las manos", desc:"Bailar tomados de las manos con un compañero al ritmo de la música."},
+  {edad:2, categoria:"Movimiento en relación al espacio", titulo:"Salto un pequeño obstáculo", desc:"Practicar el salto por sobre un obstáculo muy bajo y seguro."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Reconozco las partes de mi cuerpo", desc:"Nombrar y señalar partes del cuerpo en distintas posturas."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Camino, corro y salto", desc:"Explorar y diferenciar las habilidades motrices básicas de caminar, correr y saltar."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Mantengo el equilibrio", desc:"Practicar el equilibrio caminando sobre una línea baja y ancha."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Ruedo sobre la colchoneta", desc:"Practicar el rodado lateral sobre una colchoneta con seguridad."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Lanzo y atajo una pelota", desc:"Practicar el lanzamiento y la recepción de una pelota blanda."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Salto con impulso", desc:"Practicar el salto en largo con impulso desde una línea marcada."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Jugamos a la mancha", desc:"Participar de distintas variantes del juego de la mancha con reglas simples."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Pasamos la pelota en pareja", desc:"Practicar el pase y la recepción de pelota con un compañero."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de la ronda con consignas", desc:"Participar de juegos de ronda que incluyen consignas motrices grupales."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Formamos un tren en movimiento", desc:"Desplazarse en fila tomados de la cintura del compañero de adelante."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Juego cooperativo de transportar objetos", desc:"Colaborar entre dos para transportar un objeto grande sin dejarlo caer."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Recorremos el patio con desafíos", desc:"Explorar el patio superando desafíos motrices simples del entorno."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Trepamos con seguridad", desc:"Practicar el trepado en estructuras del patio con supervisión cercana."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Jugamos con elementos naturales", desc:"Explorar el movimiento corporal usando hojas, ramas y arena del patio."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Circuito al aire libre", desc:"Recorrer un circuito motor simple armado en el patio del jardín."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Salto la soga con ayuda", desc:"Practicar el salto de una soga baja movida por el adulto."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Reptamos por el túnel", desc:"Practicar el desplazamiento reptando por un túnel de tela."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de las estatuas musicales", desc:"Moverse libremente y detenerse al parar la música, respetando la consigna."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Carrera de a pares tomados de la mano", desc:"Correr en pareja sin soltarse de las manos hasta la meta."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Caminamos sobre distintos terrenos", desc:"Explorar la marcha sobre pasto, arena y piso firme del patio."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Coordino brazos y piernas al correr", desc:"Practicar la carrera coordinando el movimiento de brazos y piernas."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de la telaraña", desc:"Participar de un juego grupal que requiere coordinación con varios compañeros."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Exploramos el viento con telas", desc:"Correr con una tela liviana explorando el efecto del viento sobre ella."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Salto obstáculos bajos", desc:"Practicar el salto por sobre obstáculos bajos dispuestos en fila."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Circuito por equipos pequeños", desc:"Recorrer un circuito motor organizados en pequeños equipos."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Buscamos el tesoro en el patio", desc:"Recorrer el patio siguiendo pistas simples hasta encontrar un tesoro."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Practico distintos tipos de salto", desc:"Explorar el salto en alto, en largo y con giro simple."},
+  {edad:3, categoria:"Corporeidad y sociomotricidad", titulo:"Juego del puente humano", desc:"Formar un puente con el cuerpo para que otros compañeros pasen por debajo."},
+  {edad:3, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Jugamos con el agua en el patio", desc:"Explorar el movimiento corporal en juegos con agua en un día cálido."},
+  {edad:3, categoria:"Corporeidad y motricidad", titulo:"Coordino el salto con las manos", desc:"Practicar saltos que combinan el impulso de piernas y brazos."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Combino habilidades motrices", desc:"Combinar correr, saltar y esquivar en una misma secuencia de movimiento."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Practico el equilibrio dinámico", desc:"Caminar sobre una línea mientras sostiene un objeto en equilibrio."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Ruedo hacia adelante con ayuda", desc:"Practicar el rodado hacia adelante en colchoneta con asistencia docente."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Lanzo con precisión", desc:"Practicar el lanzamiento de una pelota hacia un objetivo determinado."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Salto la soga individualmente", desc:"Practicar el salto individual de una soga corta con ritmo propio."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Coordino distintos ritmos de carrera", desc:"Alternar entre carrera rápida y lenta según una consigna sonora."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Jugamos partidos simples por equipos", desc:"Participar de un juego simple organizado en dos equipos pequeños."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Practicamos pases con distintos elementos", desc:"Practicar pases con pelota, aro y bolsita entre compañeros."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Postas de relevos simples", desc:"Participar de carreras de postas organizadas en pequeños equipos."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de la mancha con variantes", desc:"Jugar distintas variantes de la mancha: cadena, congelada, elástico."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Construimos una coreografía simple", desc:"Crear en grupo una secuencia simple de movimientos con música."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Circuito con obstáculos naturales", desc:"Recorrer un circuito que aprovecha desniveles y elementos del patio."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Orientación simple en el patio", desc:"Seguir indicaciones simples para desplazarse por distintos puntos del patio."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Jugamos con elementos del entorno natural", desc:"Explorar el movimiento corporal utilizando ramas, piedras y hojas."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Salida a un espacio verde cercano", desc:"Realizar una salida a una plaza o espacio verde para explorar el movimiento libre."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Practico el salto en profundidad", desc:"Practicar el salto desde una altura baja y segura, cayendo con ambos pies."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Combino equilibrio y desplazamiento", desc:"Desplazarse sobre una superficie inestable simple manteniendo el equilibrio."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de encestar en equipo", desc:"Participar de un juego grupal de puntería y encestado por equipos."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Practicamos la comunicación corporal", desc:"Comunicar consignas simples a un compañero solo con gestos corporales."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Exploramos distintos tipos de terreno", desc:"Comparar cómo cambia el desplazamiento según el tipo de terreno."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Salto combinando piernas y brazos", desc:"Practicar saltos que requieren coordinación entre el impulso de piernas y brazos."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de las cuatro esquinas", desc:"Participar del juego tradicional de las cuatro esquinas con reglas simples."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Construimos un circuito para otro grupo", desc:"Diseñar en grupo un circuito motor para que otra sala lo recorra."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Practico giros con control", desc:"Practicar giros del propio cuerpo manteniendo el control postural."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Torneo simple de puntería", desc:"Participar de un torneo simple de lanzamientos por equipos."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Jugamos con sombras en distintos horarios", desc:"Observar y jugar con la propia sombra en distintos momentos del día."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Combino salto y giro", desc:"Practicar una secuencia simple que combina salto y giro corporal."},
+  {edad:4, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de encontrar el ritmo grupal", desc:"Sincronizar un movimiento simple entre todo el grupo al mismo tiempo."},
+  {edad:4, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Recorremos un sendero con desafíos", desc:"Recorrer un sendero simple con distintos desafíos motrices en el camino."},
+  {edad:4, categoria:"Corporeidad y motricidad", titulo:"Practico el control de la pelota con el pie", desc:"Explorar el desplazamiento de una pelota conduciéndola con el pie."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Combino varias habilidades en secuencia", desc:"Encadenar correr, saltar, girar y lanzar en una secuencia continua."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Practico el rodado hacia adelante y atrás", desc:"Practicar rodados en distintas direcciones sobre colchoneta con seguridad."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Salto la soga con ritmo sostenido", desc:"Practicar el salto continuo de soga individual sosteniendo el ritmo."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Lanzo con distintas trayectorias", desc:"Practicar lanzamientos con distinta fuerza y dirección según el objetivo."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Combino equilibrio y coordinación fina", desc:"Desplazarse en equilibrio mientras sostiene un objeto pequeño con precisión."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Diseño mi propia secuencia motriz", desc:"Crear y presentar una secuencia propia de movimientos combinados."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Participamos de un juego reglado por equipos", desc:"Jugar un juego con reglas más complejas organizado en dos equipos."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Practicamos estrategias grupales simples", desc:"Planificar en equipo una estrategia simple antes de un juego motor."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Torneo de postas con roles definidos", desc:"Participar de un torneo de postas asignando roles dentro del equipo."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Creamos una coreografía grupal", desc:"Crear y presentar una coreografía grupal con inicio, desarrollo y cierre."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de comunicación sin palabras", desc:"Comunicar una secuencia de acciones a un compañero usando solo el cuerpo."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Diseñamos un circuito para toda la sala", desc:"Diseñar en grupo un circuito motor completo para presentar al resto del jardín."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Salida a un espacio natural más amplio", desc:"Participar de una salida educativa que permita el movimiento en un entorno natural."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Orientación con puntos de referencia", desc:"Desplazarse por el patio siguiendo puntos de referencia acordados previamente."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Investigamos deportes al aire libre", desc:"Conocer e intentar practicar de forma simple un deporte que se juega al aire libre."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Practico el pique y cambio de dirección", desc:"Practicar la carrera con cambios de dirección rápidos y controlados."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Combino salto, giro y caída controlada", desc:"Practicar una secuencia que combina salto, giro y una caída controlada y segura."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Organizamos un torneo para otras salas", desc:"Organizar y presentar un pequeño torneo motor para otro grupo del jardín."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Practicamos el trabajo en equipo con objetivo común", desc:"Resolver un desafío motor que requiere la colaboración de todo el grupo."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Comparamos el movimiento en distintos terrenos", desc:"Comparar cómo varía el esfuerzo motor según el tipo de superficie."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Evalúo mi propio progreso motor", desc:"Comparar el propio desempeño en una habilidad motriz a lo largo del año."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Juego de estrategia con roles rotativos", desc:"Participar de un juego grupal donde los roles cambian durante el desarrollo."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Diseñamos una gymkana para el jardín", desc:"Diseñar en grupo una gymkana con distintas estaciones para todo el jardín."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Practico combinaciones de salto con obstáculos", desc:"Combinar distintos tipos de salto en un circuito con obstáculos variados."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Reflexionamos sobre el juego limpio", desc:"Conversar sobre la importancia de respetar reglas y compañeros al jugar."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Cuidamos el espacio donde nos movemos", desc:"Reflexionar y proponer acciones de cuidado del espacio verde utilizado."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Presento mi secuencia motriz a la familia", desc:"Mostrar a las familias una secuencia motriz preparada durante el año."},
+  {edad:5, categoria:"Corporeidad y sociomotricidad", titulo:"Cerramos el año con un gran juego grupal", desc:"Participar de un gran juego cooperativo de cierre con todo el grupo de sala."},
+  {edad:5, categoria:"Corporeidad y motricidad en relación al ambiente", titulo:"Investigamos juegos motores de otras culturas", desc:"Conocer y practicar un juego motor tradicional de otro país o cultura."},
+  {edad:5, categoria:"Corporeidad y motricidad", titulo:"Autoevalúo mi disponibilidad corporal", desc:"Conversar sobre cómo se siente el propio cuerpo después de las actividades motrices del año."},
+];
+
+let currentEdad = "todas";
+let currentCat = "todas";
+let lastIndex = -1;
+
+const edadRow = document.getElementById("edad-row");
+const catRow = document.getElementById("cat-row");
+const resultWrap = document.getElementById("result-wrap");
+const genBtn = document.getElementById("generate-btn");
+
+function rebuildCategoryChips(){
+  const pool = currentEdad === "todas" ? ACTIVITIES : ACTIVITIES.filter(a => a.edad === Number(currentEdad));
+  const cats = [...new Set(pool.map(a => a.categoria))];
+  catRow.innerHTML = '<button class="chip active" data-cat="todas">Todas las categorías</button>' +
+    cats.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join("");
+  currentCat = "todas";
+}
+
+edadRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  edadRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentEdad = btn.dataset.edad;
+  rebuildCategoryChips();
+});
+
+catRow.addEventListener("click", (e) => {
+  const btn = e.target.closest(".chip");
+  if(!btn) return;
+  catRow.querySelectorAll(".chip").forEach(c => c.classList.remove("active"));
+  btn.classList.add("active");
+  currentCat = btn.dataset.cat;
+});
+
+function pickActivity(){
+  let pool = ACTIVITIES.filter(a => {
+    const edadOk = currentEdad === "todas" || a.edad === Number(currentEdad);
+    const catOk = currentCat === "todas" || a.categoria === currentCat;
+    return edadOk && catOk;
+  });
+  if(pool.length === 0) pool = ACTIVITIES;
+  if(pool.length > 1){
+    let idx;
+    do { idx = Math.floor(Math.random()*pool.length); } while(idx === lastIndex && pool.length > 1);
+    lastIndex = idx;
+    return pool[idx];
+  }
+  return pool[0];
+}
+
+const edadLabels = {1:"Sala de 1 año",2:"Sala de 2 años",3:"Sala de 3 años",4:"Sala de 4 años",5:"Sala de 5 años"};
+
+function render(activity){
+  resultWrap.innerHTML = `
+    <div class="card" id="active-card">
+      <div class="card-top">
+        <span class="badge">${edadLabels[activity.edad]}</span>
+        <span class="badge">${activity.categoria}</span>
+      </div>
+      <h2>${activity.titulo}</h2>
+      <p>${activity.desc}</p>
+    </div>
+    <div class="again-wrap"><button class="again-btn" id="again-btn">Generar otra ↻</button></div>
+  `;
+  requestAnimationFrame(() => document.getElementById("active-card").classList.add("show"));
+  document.getElementById("again-btn").addEventListener("click", () => render(pickActivity()));
+}
+
+genBtn.addEventListener("click", () => {
+  render(pickActivity());
+  resultWrap.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+rebuildCategoryChips();
+</script>
+</body>
+</html>
